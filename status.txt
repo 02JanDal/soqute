@@ -1,0 +1,17 @@
+Commands:
+
+help - Done, needs testing
+config - Done, needs testing
+show - Done, needs testing
+search - Done, needs testing
+install - Done, needs testing
+remove - Done, needs testing
+update - Not going to do
+
+User interface:
+Pending
+
+Other:
+
+* Detect stuff that needs to move to from cmd to core or the other way
+* Testing, testing, testing
