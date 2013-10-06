@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += network core script qml
+QT       += network core qml
 
 QT       -= gui
 
@@ -17,11 +17,6 @@ OBJECTS_DIR = .objects
 
 include(../common.pri)
 include(../3rd-party/karchive.pri)
-
-debug {
-    DEFINES += INSTALL_SCRIPT_DEBUGGER
-    QT += scripttools
-}
 
 DEFINES += SOQUTE_CORE_LIBRARY
 

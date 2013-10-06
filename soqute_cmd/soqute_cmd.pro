@@ -15,12 +15,7 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 INCLUDEPATH += ../soqute_core
-LIBS += -llzma -L$$PWD/../../build-soqute-Desktop/soqute_core -lsoqute_core
-
-debug {
-    DEFINES += INSTALL_SCRIPT_DEBUGGER
-    QT += widgets
-}
+LIBS += -llzma -L$$BUILDDIR/soqute_core -lsoqute_core
 
 include(../3rd-party/qcommandlineparser.pri)
 include(../common.pri)

@@ -1,8 +1,4 @@
-#ifdef INSTALL_SCRIPT_DEBUGGER
-# include <QApplication>
-#else
-# include <QCoreApplication>
-#endif
+#include <QCoreApplication>
 #include <QStringList>
 #include <QDebug>
 
@@ -85,11 +81,7 @@ QMap<QString, BaseCommand*> setupCommands(ConfigurationHandler* configHandler, P
 
 int main(int argc, char *argv[])
 {
-#ifdef INSTALL_SCRIPT_DEBUGGER
-	QApplication a(argc, argv);
-#else
     QCoreApplication a(argc, argv);
-#endif
     a.setOrganizationName("JanDalheimer");
     a.setApplicationName("soqute");
     a.setApplicationVersion("0.0.1");
