@@ -20,7 +20,7 @@ void SearchCommand::setupParser()
     parser->addOption(QCommandLineOption(QStringList() << "d" << "matchDescription", tr("If specified, the description will be search, too")));
 }
 
-QString padded(const QString& string, const int size, const QChar character = ' ')
+QString padded(const QString& string, const int size, const QChar character = QChar(' '))
 {
 	if (string.size() >= size) {
 		return string;
