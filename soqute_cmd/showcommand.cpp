@@ -89,6 +89,7 @@ bool ShowCommand::executeImplementation()
         foreach (const PackagePointer p, package->recursiveDependencies()) {
 			foreach (const QString& mngr, p->nativeDependencies().keys()) {
 				nDeps[mngr].append(p->nativeDependencies()[mngr]);
+                nDeps[mngr].removeDuplicates();
 			}
 		}
 
