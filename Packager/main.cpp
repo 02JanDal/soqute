@@ -286,6 +286,7 @@ int main(int argc, char *argv[])
         } else {
             QFile::copy(baseDir.absoluteFilePath("meta.json"), serverRoot.absoluteFilePath("meta.json"));
         }
+    }
 
 	out << "Done\n" << flush;
 	return 0;
