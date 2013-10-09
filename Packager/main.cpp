@@ -267,6 +267,25 @@ int main(int argc, char *argv[])
 		out << "  Installing meta.json to server...\n" << flush;
 		QFile::copy(baseDir.absoluteFilePath("meta.json"), serverRoot.absoluteFilePath("meta.json"));
 	}
+        if (serverRoot.exists("meta.json")) {
+            QFile server(serverRoot.absoluteFilePath("meta.json"));
+            Q_ASSERT(server.open(QFile::ReadOnly | QFile::Truncate));
+            QFile local(baseDir.absoluteFilePath("meta.json"));
+            Q_ASSERT(local.open(QFile::ReadOnly));
+            QJsonDocument serverDoc = QJsonDocument::fromJson(server.readAll());
+            server.close();
+            QJsonArray serverArray = serverDoc.array();
+            QJsonDocument localDoc = QJsonDocument::fromJson(local.readAll());
+            local.close();
+            QJsonArray localArray = localDoc.array();
+            QVariantList res = serverArray.toVariantList();
+            res.append(localArray.toVariantList());
+            Q_ASSERT(server.open(QFile::WriteOnly | QFile::Truncate));
+            server.write(QJsonDocument(QJsonArray::fromVariantList(res)).toJson());
+            server.close();
+        } else {
+            QFile::copy(baseDir.absoluteFilePath("meta.json"), serverRoot.absoluteFilePath("meta.json"));
+        }
 
 	out << "Done\n" << flush;
 	return 0;
