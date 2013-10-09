@@ -166,8 +166,8 @@ bool ConfigCommand::executeImplementation()
 
     if (setting.supportedOperations.testFlag(operation)) {
         if (operation == Set) {
-            (configHandler->*setting.setFunction)(parser->remainingArguments().first());
-            std::cout << "set " << qPrintable(key) << " to " << qPrintable(parser->remainingArguments().first()) << std::endl;
+            (configHandler->*setting.setFunction)(remainingArgs.first());
+            std::cout << "set " << qPrintable(key) << " to " << qPrintable(remainingArgs.first()) << std::endl;
         } else if (operation == Add) {
             std::cout << "Adding values to " << qPrintable(key) << std::endl;
             (*setting.addFunction)(remainingArgs, configHandler);
