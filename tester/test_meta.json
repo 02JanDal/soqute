@@ -1,0 +1,34 @@
+[
+{
+    "id": "testpackage",
+            "description": "description for the test package",
+            "platform": "generic-test-platform",
+            "version": "1.0.0",
+            "dependencies": [
+                {
+                    "id": "testpackage1",
+                    "version": "1.0.0"
+                },
+                {
+                    "id": "testpackage2",
+                    "version": "1.0.0"
+                }
+
+            ]
+},
+{
+    "id": "testpackage1",
+            "description": "description for test package 1",
+            "platform": "generic-test-platform",
+            "version": "1.0.0",
+            "url": "file:///home/jan/projects/soqute/tester/packages/package1.tar.gz"
+},
+{
+    "id": "testpackage2",
+            "description": "description for test package 2",
+            "platform": "generic-test-platform",
+            "version": "1.0.0",
+            "url": "file:///home/jan/projects/soqute/tester/packages/package2.tar.gz"
+}
+
+]
