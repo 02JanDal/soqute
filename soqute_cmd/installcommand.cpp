@@ -58,6 +58,11 @@ bool InstallCommand::executeImplementation()
 
 	PackagePointerList pkgs;
 
+    if (ConfigurationHandler::instance()->repositoryUrls().isEmpty()) {
+        out << "No repositories available" << endl << flush;
+        return false;
+    }
+
 	// argument parsing
 	{
 		QString notFoundPackage;
