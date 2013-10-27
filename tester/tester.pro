@@ -19,3 +19,7 @@ SOURCES += main.cpp
 
 OTHER_FILES += \
     test_meta.json
+
+copy_meta.commands = cp $$PWD/test_meta.json $$shadowed($$PWD)/test_meta.json
+QMAKE_EXTRA_TARGETS += copy_meta
+POST_TARGETDEPS += copy_meta

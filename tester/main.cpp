@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     QDir::home().remove(configFile);
     QDir::home().rename(configFile + ".backup", configFile);
 
-    out << "Enter any key to continue cleaning up " << flush; confirm();
+    out << "Enter any key + enter to continue cleaning up " << flush; confirm();
 
     out << "Cleaning up...";
     if (dir.exists()) {
