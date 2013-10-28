@@ -129,6 +129,7 @@ bool InstallCommand::executeImplementation()
 		}
 	}
 
+    bool success = true;
 	// install
 	{
         Downloader downloader(packages, pkgs, this);
@@ -147,7 +148,9 @@ bool InstallCommand::executeImplementation()
 			QPair<Downloader::Message, QVariant> msg = downloader.takeLastMessage();
 			out << downloader.messageToString(msg.first, msg.second) << "\n" << flush;
 		}
+
+        success = downloader.isSuccess();
 	}
 
-	return true;
+    return success;
 }
