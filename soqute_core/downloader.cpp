@@ -119,8 +119,8 @@ void Downloader::networkDone(QNetworkReply *reply)
 		m_unarrivedReplies.removeAll(reply);
 		PackagePointer package = reply->property("package").value<PackagePointer>();
 		addMessage(ReceivedArchive, QVariant::fromValue(package));
-		const QString path = reply->url().path(QUrl::FullyEncoded);
-		const QString fileName = m_baseArchivePath.filePath(path.right(path.lastIndexOf('/')));
+        const QString path = reply->url().path(QUrl::FullyEncoded);
+        const QString fileName = m_baseArchivePath.filePath(path.mid(path.lastIndexOf('/')+1));
 		QString errorString;
 		bool res = saveToFile(reply->readAll(), fileName, &errorString);
 		if (!res) {
