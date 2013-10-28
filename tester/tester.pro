@@ -21,5 +21,6 @@ OTHER_FILES += \
     test_meta.json
 
 copy_meta.commands = cp $$PWD/test_meta.json $$shadowed($$PWD)/test_meta.json
-QMAKE_EXTRA_TARGETS += copy_meta
-POST_TARGETDEPS += copy_meta
+copy_packages.commands = cp -r $$PWD/packages $$shadowed($$PWD)
+QMAKE_EXTRA_TARGETS += copy_meta copy_packages
+POST_TARGETDEPS += copy_meta copy_packages
