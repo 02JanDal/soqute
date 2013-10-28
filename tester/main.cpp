@@ -53,6 +53,9 @@ QByteArray runProgram(const QString& program, const QStringList& arguments = QSt
     proc.start();
     proc.waitForStarted(-1);
     proc.waitForFinished(-1);
+    if (proc.exitCode() != QProcess::NormalExit) {
+        return "err";
+    }
     return proc.readAll();
 }
 
@@ -66,6 +69,7 @@ bool compareFiles(const QString& f1, const QString& f2)
             i1.permissions() != i2.permissions() ||
             i1.fileName() != i2.fileName() ||
             !i1.exists() || !i2.exists()) {
+        qDebug() << "files" << f1 << "and" << f2 << "differ";
         return false;
     }
 
@@ -73,21 +77,29 @@ bool compareFiles(const QString& f1, const QString& f2)
     QFile file1(f1);
     QFile file2(f2);
     if (!file1.open(QFile::ReadOnly) || !file2.open(QFile::ReadOnly)) {
+        qDebug() << "couldn't open a file";
         return false;
     } else {
         QCryptographicHash hash1(QCryptographicHash::Sha256);
         QCryptographicHash hash2(QCryptographicHash::Sha256);
         hash1.addData(&file1);
         hash2.addData(&file2);
-        return hash1.result() == hash2.result();
+        if (hash1.result() == hash2.result()) {
+            return true;
+        } else {
+            qDebug() << "files" << file1.fileName() << "and" << file2.fileName() << "differ";
+            return false;
+        }
     }
 }
 bool compareDirectories(const QDir& d1, const QDir& d2)
 {
     if (d1.entryList() != d2.entryList()) {
+        qDebug() << "contents of" << d1.absolutePath() << "are different from those of" << d2.absolutePath();
+        qDebug() << "(" << d1.entryList() << ")\n(" << d2.entryList() << ")";
         return false;
     } else {
-        foreach(const QFileInfo & info, d1.entryInfoList()) {
+        foreach(const QFileInfo & info, d1.entryInfoList(QDir::NoDotAndDotDot)) {
             if (!compareEntry(info, QFileInfo(d2, info.fileName()))) {
                 return false;
             }
@@ -99,7 +111,7 @@ bool compareEntry(const QFileInfo& i1, const QFileInfo& i2)
 {
     if (i1.isFile() && i2.isFile()) {
         return compareFiles(i1.absoluteFilePath(), i2.absoluteFilePath());
-    } else if (i1.isDir() && i2.isFile()) {
+    } else if (i1.isDir() && i2.isDir()) {
         return compareDirectories(i1.absoluteFilePath(), i2.absoluteFilePath());
     } else {
         return false;
@@ -128,7 +140,7 @@ int main(int argc, char *argv[])
     out << "Welcome to the soqute tester. This program will use the following directory:" << endl << flush;
     out << "    " << dir.absolutePath() << endl << flush;
     out << "  Continue? " << flush;
-    if (!confirm()) {
+    if (false && !confirm()) {
         return 0;
     }
 
@@ -144,42 +156,47 @@ int main(int argc, char *argv[])
 
     out << "Setting up soqute..." << endl << flush;
     const QString repoUrl = QUrl::fromLocalFile(a.applicationDirPath() + QDir::separator() + "test_meta.json").toString();
-    runProgram("./soqute_cmd", QStringList() << "config" << "--add" << "repositories" << repoUrl);
-    runProgram("./soqute_cmd", QStringList() << "config" << "--set" << "install-prefix" << dir.absolutePath());
+    if (runProgram("./soqute_cmd", QStringList() << "config" << "--add" << "repositories" << repoUrl) != "err") {
+        if (runProgram("./soqute_cmd", QStringList() << "config" << "--set" << "install-prefix" << dir.absolutePath()) != "err") {
 
-    out << "Installing..." << endl << flush;
-    runProgram("./soqute_cmd", QStringList() << "install" << "--silent" << "testpackage/1.0.0#generic-test-platform");
+            out << "Installing..." << endl << flush;
+            if (runProgram("./soqute_cmd", QStringList() << "install" << "--silent" << "testpackage/1.0.0#generic-test-platform") != "err") {
 
-    QDir installDir(dir);
-    installDir.cd("generic-test-platform");
-    installDir.cd("1.0.0");
-    if (!installDir.exists()) {
-        out << "ERROR: Root install directory was not created" << endl << flush;
-    } else {
-        QDir fromDir(a.applicationDirPath());
-        fromDir.cd("packages");
-        fromDir.cd("full");
-        if (!compareDirectories(installDir, fromDir)) {
-            out << "ERROR: Directories don't match" << endl << flush;
-        } else {
-            out << "Removing first package..." << endl << flush;
-            runProgram("./soqute_cmd", QStringList() << "remove" << "--silent" << "testpackage1");
-            fromDir.cdUp();
-            fromDir.cd("package1");
-            if (!compareDirectories(installDir, fromDir)) {
-                out << "ERROR: Directories don't match" << endl << flush;
-            } else {
-                out << "Removing second package..." << endl << flush;
-                runProgram("./soqute_cmd", QStringList() << "remove" << "--silent" << "testpackage2");
-                fromDir.cdUp();
-                fromDir.cd("package2");
-                if (!compareDirectories(installDir, fromDir)) {
-                    out << "ERROR: Directories don't match" << endl << flush;
+                QDir installDir(dir);
+                installDir.cd("generic-test-platform");
+                installDir.cd("1.0.0");
+                if (!installDir.exists()) {
+                    out << "ERROR: Root install directory was not created" << endl << flush;
                 } else {
-                    if (installDir.count() > 0) {
-                        out << "ERROR: Installation directory is not empty" << endl << flush;
+                    QDir fromDir(a.applicationDirPath());
+                    fromDir.cd("packages");
+                    fromDir.cd("full");
+                    if (!compareDirectories(installDir, fromDir)) {
+                        out << "ERROR: Directories don't match" << endl << flush;
                     } else {
-                        out << "SUCCESS: Everything went fine" << endl << flush;
+                        out << "Removing first package..." << endl << flush;
+                        if (runProgram("./soqute_cmd", QStringList() << "remove" << "--silent" << "testpackage1/1.0.0") != "err") {
+                            fromDir.cdUp();
+                            fromDir.cd("package1");
+                            if (!compareDirectories(installDir, fromDir)) {
+                                out << "ERROR: Directories don't match" << endl << flush;
+                            } else {
+                                out << "Removing second package..." << endl << flush;
+                                if (runProgram("./soqute_cmd", QStringList() << "remove" << "--silent" << "testpackage2/1.0.0") != "err") {
+                                    fromDir.cdUp();
+                                    fromDir.cd("package2");
+                                    if (!compareDirectories(installDir, fromDir)) {
+                                        out << "ERROR: Directories don't match" << endl << flush;
+                                    } else {
+                                        if (installDir.count() > 0) {
+                                            out << "ERROR: Installation directory is not empty" << endl << flush;
+                                        } else {
+                                            out << "SUCCESS: Everything went fine" << endl << flush;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
