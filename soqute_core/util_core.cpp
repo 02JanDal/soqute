@@ -279,4 +279,15 @@ QList<T> removeDuplicatesFromList(const QList<T> &in)
     return out;
 }
 
+PackagePointerList removeDuplicatesFromList(const PackagePointerList& in)
+{
+    PackagePointerList out;
+    foreach (PackagePointer package, in) {
+        if (!out.contains(package)) {
+            out.append(package);
+        }
+    }
+    return out;
+}
+
 }

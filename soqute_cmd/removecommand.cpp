@@ -91,6 +91,8 @@ bool RemoveCommand::executeImplementation()
         }
     }
 
+    pkgs = Util::removeDuplicatesFromList(pkgs);
+
     // dependency calculation
     {
         DependencyCalculator depCalculator(packages, pkgs, this);
@@ -99,6 +101,8 @@ bool RemoveCommand::executeImplementation()
         }
         pkgs = depCalculator.result();
     }
+
+    pkgs = Util::removeDuplicatesFromList(pkgs);
 
     if (pkgs.isEmpty()) {
         out << "Nothing to do\n" << flush;

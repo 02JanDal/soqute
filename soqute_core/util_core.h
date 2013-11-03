@@ -1,9 +1,11 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+template<typename T> class QList;
 class Package;
 class PackageList;
-template<typename T> class QList;
+typedef const Package* PackagePointer;
+typedef QList<PackagePointer> PackagePointerList;
 class QStringList;
 class QString;
 class QDir;
@@ -52,6 +54,7 @@ void installArchiveEntry(const KArchiveEntry* entry, const QString& destination)
 
 template<typename T>
 QList<T> removeDuplicatesFromList(const QList<T>& in);
+PackagePointerList removeDuplicatesFromList(const PackagePointerList& in);
 
 }
 
