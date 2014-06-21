@@ -7,94 +7,90 @@
 #include "qcommandlineparser.h"
 #include "util_cmd.h"
 
-// TODO use Qt's property system to get rid of function pointers?
+// TODO use Qt's property system?
 
 enum Operation {
     None = 0x00,
     Set  = 0x01,
     Read = 0x02,
     Delete = 0x04,
-    Add  = 0x06
+	Add  = 0x08
 };
 Q_DECLARE_FLAGS(Operations, Operation)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Operations)
 
-// TODO move anonym stuff to ConfigCommand
-
-typedef void(*ReadSettingFunctionPtr)(const ConfigurationHandler*);
-typedef QString(ConfigurationHandler::*ReadDefaultSettingFunctionPtr)()const;
-typedef void(*AddSettingFunctionPtr)(const QStringList&, ConfigurationHandler*);
-typedef void(*DeleteSettingFunctionPtr)(const QString&, ConfigurationHandler*);
-typedef void(ConfigurationHandler::*SetSettingFunctionPtr)(const QString&);
-
-void readRepositories(const ConfigurationHandler* configHandler);
-void addRepositories(const QStringList& repos, ConfigurationHandler* configHandler);
-void deleteRepository(const QString& value, ConfigurationHandler* configHandler);
-
-/**
- * @brief The Setting struct contains data for settings, like supported operations, the read function etc.
- *
- * There are several constructors to make it easier to setup this struct
- *
- * You always have to specify which operations are supported, normally you always want atleast read and either add or set.
- * You also have to specify either a ReadSettingFunctionPtr or ReadDefaultSettingFunctionPtr. The first one will call any
- *   free standing function with the ConfigurationHandler as argument, the later will call a member function of ConfigurationHandler
- *   which should return the value of the function as a QString. Using the later will output something like "key: value". Use
- *   the first one if you need some custom output, for example when using a list of items.
- * You might also want to either specify a setter or adder function. The add function can be any free standing function and will
- *   take a list of the values to add and a ConfigurationHandler object. The set function should be a member function of
- *   ConfigurationHandler and take a QString containing the value to set.
- */
 struct Setting
 {
-    Setting() {}
-    Setting(Operations ops, ReadDefaultSettingFunctionPtr readFunc) : supportedOperations(ops), readDefaultFunction(readFunc) {}
-    Setting(Operations ops, ReadSettingFunctionPtr readFunc) : supportedOperations(ops), readFunction(readFunc) {}
-    Setting(Operations ops, ReadSettingFunctionPtr readFunc, SetSettingFunctionPtr setFunc) : supportedOperations(ops), readFunction(readFunc), readDefaultFunction(0), setFunction(setFunc) {}
-    Setting(Operations ops, ReadDefaultSettingFunctionPtr readFunc, SetSettingFunctionPtr setFunc) : supportedOperations(ops), readFunction(0), readDefaultFunction(readFunc), setFunction(setFunc) {}
-    Setting(Operations ops, ReadSettingFunctionPtr readFunc, AddSettingFunctionPtr addFunc, SetSettingFunctionPtr setFunc) : supportedOperations(ops), readFunction(readFunc), readDefaultFunction(0), addFunction(addFunc), setFunction(setFunc) {}
-    Setting(Operations ops, ReadSettingFunctionPtr readFunc, AddSettingFunctionPtr addFunc, DeleteSettingFunctionPtr deleteFunc) : supportedOperations(ops), readFunction(readFunc), readDefaultFunction(0), addFunction(addFunc), deleteFunction(deleteFunc) {}
-    Operations supportedOperations;
-    ReadSettingFunctionPtr readFunction;
-    ReadDefaultSettingFunctionPtr readDefaultFunction;
-    AddSettingFunctionPtr addFunction;
-    DeleteSettingFunctionPtr deleteFunction;
-    /// This should point at a member function of ConfigurationHandler
-    SetSettingFunctionPtr setFunction;
+	Setting(const QString &key, Operations ops = None) : key(key), supportedOperations(ops) {}
+
+	QString key;
+	Operations supportedOperations;
+
+	virtual QStringList read(ConfigurationHandler *) { return QStringList(); }
+	virtual void add(const QStringList &, ConfigurationHandler *) {}
+	virtual void deleteValue(const QString &, ConfigurationHandler *) {}
+	virtual void set(const QString &, ConfigurationHandler *) {}
+};
+struct RepositoriesSetting : public Setting
+{
+	RepositoriesSetting() : Setting("repositories", Read | Add | Delete) {}
+
+	QStringList read(ConfigurationHandler *handler) override
+	{
+		QStringList out;
+		for (const auto url : handler->repositoryUrls())
+		{
+			out.append(url.toString());
+		}
+		return out;
+	}
+	void add(const QStringList &values, ConfigurationHandler *handler) override
+	{
+		for (const auto url : values)
+		{
+			handler->addRepositoryUrl(QUrl::fromUserInput(url));
+		}
+	}
+	void deleteValue(const QString &value, ConfigurationHandler *handler) override
+	{
+		handler->removeRepositoryUrl(QUrl::fromUserInput(value));
+	}
+};
+struct PackageManagerSetting : public Setting
+{
+	PackageManagerSetting() : Setting("package-manager", Read | Set) {}
+
+	QStringList read(ConfigurationHandler *handler) override
+	{
+		return QStringList() << handler->packageManager();
+	}
+	void set(const QString &value, ConfigurationHandler *handler) override
+	{
+		handler->setPackageManager(value);
+	}
+};
+struct InstallPrefixSetting : public Setting
+{
+	InstallPrefixSetting() : Setting("install-prefix", Read | Set) {}
+
+	QStringList read(ConfigurationHandler *handler) override
+	{
+		return QStringList() << handler->installRoot();
+	}
+	void set(const QString &value, ConfigurationHandler *handler) override
+	{
+		handler->setInstallRoot(value);
+	}
 };
 
-bool operator==(const Setting& s1, const Setting& s2)
-{
-    return s1.readFunction == s2.readFunction && s1.readDefaultFunction == s2.readDefaultFunction && s1.supportedOperations == s2.supportedOperations;
-}
-
 /// \returns A map with available setting keys mapped to thier Setting object
-QMap<QString, Setting> availableSettings()
+QList<Setting *> availableSettings()
 {
-    QMap<QString, Setting> settings;
-    settings.insert("repositories", Setting(Read | Add | Delete, &readRepositories, &addRepositories, &deleteRepository));
-    settings.insert("package-manager", Setting(Read | Set, &ConfigurationHandler::packageManager, &ConfigurationHandler::setPackageManager));
-	settings.insert("install-prefix", Setting(Read | Set, &ConfigurationHandler::installRoot, &ConfigurationHandler::setInstallRoot));
+	QList<Setting *> settings;
+	settings.append(new RepositoriesSetting());
+	settings.append(new PackageManagerSetting());
+	settings.append(new InstallPrefixSetting());
     return settings;
-}
-
-void readRepositories(const ConfigurationHandler* configHandler)
-{
-    std::cout << "Repositories:" << std::endl;
-    const QList<QUrl> repositories = configHandler->repositoryUrls();
-	for (const QUrl& repository : repositories) {
-        std::cout << "  " << qPrintable(repository.toString()) << std::endl;
-    }
-}
-void addRepositories(const QStringList& repos, ConfigurationHandler* configHandler)
-{
-	for (const QString& repo : repos) {
-        configHandler->addRepositoryUrl(QUrl::fromUserInput(repo));
-    }
-}
-void deleteRepository(const QString& value, ConfigurationHandler* configHandler)
-{
-    configHandler->removeRepositoryUrl(QUrl(value));
 }
 
 ConfigCommand::ConfigCommand(ConfigurationHandler *configHandler, PackageList* packages, QObject *parent) :
@@ -120,6 +116,11 @@ void ConfigCommand::setupParser()
 
 bool ConfigCommand::executeImplementation()
 {
+	QTextStream out(stdout);
+	out.setFieldAlignment(QTextStream::AlignLeft);
+
+	QList<Setting *> settings = availableSettings();
+
     Operation operation;
     if (parser->isSet("set")) {
         operation = Set;
@@ -130,61 +131,61 @@ bool ConfigCommand::executeImplementation()
     } else if (parser->isSet("delete")) {
         operation = Delete;
     } else if (parser->isSet("list")) {
-        std::cout << "Known keys: " << qPrintable(QStringList(availableSettings().keys()).join(", ")) << std::endl;
+		QStringList keys;
+		std::for_each(settings.begin(), settings.end(), [&keys](const Setting *setting){keys.append(setting->key);});
+		out << "Known keys: " << qPrintable(keys.join(", ")) << endl;
 		return true;
 	}
 
 	QStringList remainingArgs = parser->positionalArguments();
     if (remainingArgs.isEmpty()) {
-        std::cout << "You need so specify a key" << std::endl;
+		out << "You need so specify a key" << endl;
 		return false;
     }
     const QString key = remainingArgs.takeFirst();
 
-    QMap<QString, Setting> settings = availableSettings();
 
-    if (!settings.contains(key) && !(operation == Read && key == "all")) {
-        std::cout << "Unknown key" << std::endl;
+	auto selectedSettingIterator = std::find_if(settings.begin(), settings.end(), [key](const Setting *setting){return setting->key == key;});
+
+	if (selectedSettingIterator == settings.end() && !(operation == Read && key == "all")) {
+		out << "Unknown key" << endl;
 		return false;
     }
 
 	if ((operation == Set || operation == Add || operation == Delete) && parser->positionalArguments().isEmpty()) {
-        std::cout << "You need so specify (a) value(s)" << std::endl;
+		out << "You need so specify (a) value(s)" << endl;
 		return false;
     }
 
 	if (key == "all" && operation == Read) {
-		for (Setting setting : settings.values()) {
-            if (setting.readFunction == 0) {
-                std::cout << qPrintable(settings.key(setting)) << ": " << qPrintable((configHandler->*setting.readDefaultFunction)()) << std::endl;
-            } else {
-                (*setting.readFunction)(configHandler);
-            }
+		for (auto setting : settings) {
+			if (setting->supportedOperations.testFlag(Read))
+			{
+				out << qSetFieldWidth(20) << setting->key << (" : " + setting->read(configHandler).join(", ")) << qSetFieldWidth(0) << endl;
+			}
         }
         return true;
     }
 
-    Setting setting = settings[key];
+	Setting *setting = *selectedSettingIterator;
 
-    if (setting.supportedOperations.testFlag(operation)) {
+	if (setting->supportedOperations.testFlag(operation)) {
         if (operation == Set) {
-            (configHandler->*setting.setFunction)(remainingArgs.first());
-            std::cout << "set " << qPrintable(key) << " to " << qPrintable(remainingArgs.first()) << std::endl;
+			setting->set(remainingArgs.first(), configHandler);
+			out << "Setting " << qPrintable(key) << " to " << qPrintable(remainingArgs.first()) << endl;
         } else if (operation == Add) {
-            std::cout << "Adding values to " << qPrintable(key) << std::endl;
-            (*setting.addFunction)(remainingArgs, configHandler);
+			out << "Adding values to " << qPrintable(key) << endl;
+			setting->add(remainingArgs, configHandler);
         } else if (operation == Read) {
-            if (setting.readFunction == 0) {
-                std::cout << qPrintable(key) << ": " << qPrintable((configHandler->*setting.readDefaultFunction)()) << std::endl;
-            } else {
-                (*setting.readFunction)(configHandler);
-            }
+			out << setting->key << " : " << setting->read(configHandler).join(", ") << endl;
         } else if (operation == Delete) {
-            std::cout << "Removing " << qPrintable(remainingArgs[0]) << " from " << qPrintable(key) << std::endl;
-            (*setting.deleteFunction)(remainingArgs[0], configHandler);
+			out << "Removing " << qPrintable(remainingArgs[0]) << " from " << qPrintable(key) << endl;
+			for (auto value : remainingArgs) {
+				setting->deleteValue(value, configHandler);
+			}
         }
     } else {
-        std::cout << "The key \"" << qPrintable(key) << "\" does not support this operation" << std::endl;
+		out << "The key \"" << qPrintable(key) << "\" does not support this operation" << endl;
 		return false;
     }
 
