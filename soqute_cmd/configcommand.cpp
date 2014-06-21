@@ -115,7 +115,7 @@ void ConfigCommand::setupParser()
                                          tr("Reads the value associated with the specified key (this is the default if no other option is given). You may use \"all\" as key to display all settings")));
     parser->addOption(QCommandLineOption(QStringList() << "a" << "add", tr("Adds all values following key to key")));
     parser->addOption(QCommandLineOption(QStringList() << "d" << "delete", tr("Deletes a value from a key")));
-    parser->addOption(QCommandLineOption(QStringList() << "l" << "list", tr("Lists all known keys")));
+	parser->addOption(QCommandLineOption(QStringList() << "l" << "list", tr("Lists all known keys")));
 }
 
 bool ConfigCommand::executeImplementation()
@@ -131,8 +131,8 @@ bool ConfigCommand::executeImplementation()
         operation = Delete;
     } else if (parser->isSet("list")) {
         std::cout << "Known keys: " << qPrintable(QStringList(availableSettings().keys()).join(", ")) << std::endl;
-		return false;
-    }
+		return true;
+	}
 
 	QStringList remainingArgs = parser->positionalArguments();
     if (remainingArgs.isEmpty()) {
@@ -153,7 +153,7 @@ bool ConfigCommand::executeImplementation()
 		return false;
     }
 
-    if (key == "all") {
+	if (key == "all" && operation == Read) {
         foreach (Setting setting, settings.values()) {
             if (setting.readFunction == 0) {
                 std::cout << qPrintable(settings.key(setting)) << ": " << qPrintable((configHandler->*setting.readDefaultFunction)()) << std::endl;
