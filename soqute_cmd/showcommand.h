@@ -1,5 +1,4 @@
-#ifndef SHOW_H
-#define SHOW_H
+#pragma once
 
 #include "basecommand.h"
 
@@ -13,5 +12,3 @@ protected:
     virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };
-
-#endif // SHOW_H

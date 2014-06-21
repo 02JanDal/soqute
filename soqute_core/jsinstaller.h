@@ -1,5 +1,4 @@
-#ifndef QTSCRIPTINSTALLER_H
-#define QTSCRIPTINSTALLER_H
+#pragma once
 
 #include "abstractinstaller.h"
 
@@ -21,5 +20,3 @@ private:
 	void setupEngine();
 	void setupEngineForPackage(const Package* package);
 };
-
-#endif // QTSCRIPTINSTALLER_H

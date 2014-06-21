@@ -1,5 +1,4 @@
-#ifndef BASECOMMAND_H
-#define BASECOMMAND_H
+#pragma once
 
 #include <QObject>
 
@@ -28,5 +27,3 @@ protected: // methods
     virtual void setupParser() = 0;
 	virtual bool executeImplementation() = 0;
 };
-
-#endif // BASECOMMAND_H

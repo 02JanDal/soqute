@@ -1,5 +1,4 @@
-#ifndef REMOVECOMMAND_H
-#define REMOVECOMMAND_H
+#pragma once
 
 #include "basecommand.h"
 
@@ -18,5 +17,3 @@ protected:
 private:
     bool isNewestInstalled(const Package *entity);
 };
-
-#endif // REMOVECOMMAND_H

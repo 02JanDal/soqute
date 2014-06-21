@@ -1,5 +1,4 @@
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 template<typename T> class QList;
 class Package;
@@ -57,5 +56,3 @@ QList<T> removeDuplicatesFromList(const QList<T>& in);
 PackagePointerList removeDuplicatesFromList(const PackagePointerList& in);
 
 }
-
-#endif // UTIL_H

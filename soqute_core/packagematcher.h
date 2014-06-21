@@ -1,5 +1,4 @@
-#ifndef PACKAGEMATCHER_H
-#define PACKAGEMATCHER_H
+#pragma once
 
 #include <QList>
 
@@ -19,5 +18,3 @@ public:
 private:
     PackageList* m_packages;
 };
-
-#endif // PACKAGEMATCHER_H

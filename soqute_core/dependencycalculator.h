@@ -1,5 +1,4 @@
-#ifndef DEPENDENCYCALCULATOR_H
-#define DEPENDENCYCALCULATOR_H
+#pragma once
 
 #include <QObject>
 
@@ -53,5 +52,3 @@ private:
     PackagePointerList calculateDependenciesForward(const Package *package, bool *ok = 0, const Package **notFoundPackage = 0);
     PackagePointerList calculateDependenciesReverse(const Package *package, const QString &intendent = "");
 };
-
-#endif // DEPENDENCYCALCULATOR_H

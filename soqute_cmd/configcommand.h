@@ -1,5 +1,4 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include "basecommand.h"
 
@@ -15,5 +14,3 @@ protected:
     virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };
-
-#endif // CONFIG_H

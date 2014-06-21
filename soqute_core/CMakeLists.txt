@@ -27,7 +27,9 @@ set(SRCS
 
 include_directories(${KARCHIVE_INCLUDE_DIR})
 
-add_library(soqute_core STATIC ${SRCS})
+add_definitions(-DSOQUTE_CORE_LIBRARY)
+
+add_library(soqute_core SHARED ${SRCS})
 qt5_use_modules(soqute_core Core Network Qml)
 target_link_libraries(soqute_core karchive)
 

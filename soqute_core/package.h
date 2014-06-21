@@ -1,5 +1,4 @@
-#ifndef PACKAGE_H
-#define PACKAGE_H
+#pragma once
 
 #include <QObject>
 #include <QMap>
@@ -209,5 +208,3 @@ private:
 };
 
 QDebug& operator<<(QDebug& d, const PackagePointer pkg);
-
-#endif // PACKAGE_H

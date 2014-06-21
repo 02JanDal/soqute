@@ -1,5 +1,4 @@
-#ifndef CONFIGURATIONHANDLER_H
-#define CONFIGURATIONHANDLER_H
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
@@ -40,5 +39,3 @@ private:
 
     void setupDefaults();
 };
-
-#endif // CONFIGURATIONHANDLER_H

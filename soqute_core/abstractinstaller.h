@@ -1,5 +1,4 @@
-#ifndef ABSTRACTINSTALLER_H
-#define ABSTRACTINSTALLER_H
+#pragma once
 
 #include <QThread>
 
@@ -25,5 +24,3 @@ signals:
 	void message(const QString& msg);
 	void error(const QString& msg);
 };
-
-#endif // ABSTRACTINSTALLER_H

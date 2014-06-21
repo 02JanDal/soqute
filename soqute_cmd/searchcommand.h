@@ -1,5 +1,4 @@
-#ifndef SEARCHCOMMAND_H
-#define SEARCHCOMMAND_H
+#pragma once
 
 #include "basecommand.h"
 
@@ -13,5 +12,3 @@ protected:
     virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };
-
-#endif // SEARCHCOMMAND_H

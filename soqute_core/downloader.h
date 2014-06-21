@@ -1,5 +1,4 @@
-#ifndef INSTALLTASK_H
-#define INSTALLTASK_H
+#pragma once
 
 #include <QObject>
 
@@ -97,5 +96,3 @@ signals:
 	void message(const Message msg, const QVariant& data);
 	void done(const bool success);
 };
-
-#endif // INSTALLTASK_H

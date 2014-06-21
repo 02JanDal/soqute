@@ -1,5 +1,4 @@
-#ifndef INSTALLCOMMAND_H
-#define INSTALLCOMMAND_H
+#pragma once
 
 #include "basecommand.h"
 
@@ -13,5 +12,3 @@ protected:
     virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };
-
-#endif // INSTALLCOMMAND_H

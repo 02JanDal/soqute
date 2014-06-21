@@ -1,8 +1,5 @@
-#ifndef TEXTSTREAM_H
-#define TEXTSTREAM_H
+#pragma once
 
 #include <QTextStream>
 
 extern QTextStream out;
-
-#endif // TEXTSTREAM_H

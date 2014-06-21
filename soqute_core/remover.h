@@ -1,5 +1,4 @@
-#ifndef REMOVER_H
-#define REMOVER_H
+#pragma once
 
 #include <QObject>
 #include <QQueue>
@@ -57,5 +56,3 @@ signals:
 	void message(const Message msg, const QVariant& data);
 	void done(const bool success);
 };
-
-#endif // REMOVER_H

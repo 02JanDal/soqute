@@ -1,5 +1,4 @@
-#ifndef INSTALLEDPACKAGES_H
-#define INSTALLEDPACKAGES_H
+#pragma once
 
 #include <QObject>
 
@@ -29,5 +28,3 @@ private:
 
 	const QString generateKey(const QString& id, const QString& version, const QString& platform) const;
 };
-
-#endif // INSTALLEDPACKAGES_H

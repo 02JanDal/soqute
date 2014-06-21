@@ -1,5 +1,4 @@
-#ifndef SOQUTE_CORE_GLOBAL_H
-#define SOQUTE_CORE_GLOBAL_H
+#pragma once
 
 #include <QtGlobal>
 
@@ -8,5 +7,3 @@
 #else
 #  define SOQUTE_CORESHARED_EXPORT Q_DECL_IMPORT
 #endif
-
-#endif // SOQUTE_CORE_GLOBAL_H

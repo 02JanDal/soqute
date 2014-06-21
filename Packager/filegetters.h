@@ -1,5 +1,4 @@
-#ifndef FILEGETTERS_H
-#define FILEGETTERS_H
+#pragma once
 
 #include <QMap>
 #include <QStringList>
@@ -28,6 +27,3 @@ QMap<QString, QStringList> dependencies();
 QMap<QString, QMap<QString, QStringList> > nativeDependencies();
 
 }
-
-
-#endif // FILEGETTERS_H
