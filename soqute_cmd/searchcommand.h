@@ -10,6 +10,6 @@ public:
 						   QObject *parent = 0);
 
 protected:
-	virtual void setupParser() override;
-	virtual bool executeImplementation() override;
+	void setupParser() override;
+	bool executeImplementation() override;
 };

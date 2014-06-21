@@ -36,7 +36,7 @@ void ShowCommand::setupParser()
 bool ShowCommand::executeImplementation()
 {
 	if (parser->positionalArguments().isEmpty()) {
-		out << "You need to specify a package\n" << flush;
+		out << "You need to specify a package" << endl;
 		return false;
 	}
 
@@ -54,7 +54,7 @@ bool ShowCommand::executeImplementation()
 	const Package *package = packages->package(id, version, platform);
 
 	if (package == 0) {
-		out << "No such package found\n" << flush;
+		out << "No such package found" << endl;
 		return false;
 	}
 
@@ -77,21 +77,20 @@ bool ShowCommand::executeImplementation()
 			<< (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(
 					package->id(), package->version(), package->platform())
 					? "Installed"
-					: "Not installed") << "\n" << flush;
-		out << "ID:                  " << package->id() << "\n"
-			<< "Description:         " << package->description() << "\n"
-			<< "Version:             " << package->version() << "\n"
-			<< "Other versions:      " << allVersions.join(", ") << "\n"
-			<< "Platform:            " << package->platform() << "\n"
-			<< "Other platforms:     " << allPlatforms.join(", ") << "\n"
-			<< "Dependencies:        " << flush;
+					: "Not installed") << endl;
+		out << "ID:                  " << package->id() << endl
+			<< "Description:         " << package->description() << endl
+			<< "Version:             " << package->version() << endl
+			<< "Other versions:      " << allVersions.join(", ") << endl
+			<< "Platform:            " << package->platform() << endl
+			<< "Other platforms:     " << allPlatforms.join(", ") << endl
+			<< "Dependencies:        ";
 		for (PackagePointer p : package->recursiveDependencies()) {
 			out << p->id() << " ";
 		}
-		out << "\n"
-			<< "Native dependencies: \n" << flush;
+		out << endl << "Native dependencies: " << endl;
 		QMap<QString, QStringList> nDeps;
-		for (const PackagePointer p : package->recursiveDependencies()) {
+		for (PackagePointer p : package->recursiveDependencies()) {
 			for (const QString &mngr : p->nativeDependencies().keys()) {
 				nDeps[mngr].append(p->nativeDependencies()[mngr]);
 				nDeps[mngr].removeDuplicates();
@@ -99,18 +98,16 @@ bool ShowCommand::executeImplementation()
 		}
 
 		for (const QString &mngr : nDeps.keys()) {
-			out << "    " << mngr << ": " << nDeps[mngr].join(", ") << "\n" << flush;
+			out << "    " << mngr << ": " << nDeps[mngr].join(", ") << endl;
 		}
 	} else {
 		// only output packages
-		QMap<QString, QStringList> nDeps;
-		for (const PackagePointer p : package->recursiveDependencies()) {
-			for (const QString &mngr : p->nativeDependencies().keys()) {
-				nDeps[mngr].append(p->nativeDependencies()[mngr]);
-			}
+		const QString mngr = parser->value("nativeDependencies");
+		QStringList nDeps;
+		for (PackagePointer p : package->recursiveDependencies()) {
+			nDeps.append(p->nativeDependencies()[mngr]);
 		}
-		QStringList packages = nDeps[parser->value("nativeDependencies")];
-		out << packages.join(' ') << "\n" << flush;
+		out << nDeps.join(' ') << endl;
 	}
 
 	return true;

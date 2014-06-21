@@ -14,6 +14,7 @@ InstalledPackages::InstalledPackages(QSettings *settings, QObject *parent)
 bool InstalledPackages::isPackageInstalled(const QString &id, const QString &version,
 										   const QString &platform) const
 {
+	// TODO version.isNull() should match all versions
 	const QString key = generateKey(id, version, platform);
 	return m_settings->allKeys().contains(key) && m_settings->value(key).toBool();
 }

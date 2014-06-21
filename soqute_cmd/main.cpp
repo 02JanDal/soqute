@@ -121,8 +121,10 @@ int main(int argc, char *argv[])
 	}
 
 	if (!cmd->execute(arguments.mid(1))) {
+		out << flush;
 		return 1;
 	}
+	out << flush;
 
 	return 0;
 }
