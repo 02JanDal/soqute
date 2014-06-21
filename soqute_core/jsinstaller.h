@@ -12,8 +12,8 @@ public:
 	explicit JSInstaller(QObject *parent = 0);
 
 public slots:
-	virtual void install(const Package *package, const QString &fileName, QString *errorString = 0);
-	virtual void remove(const Package *package, const QString &fileName, QString *errorString = 0);
+	virtual void install(const Package *package, const QString &fileName, QString *errorString = 0) override;
+	virtual void remove(const Package *package, const QString &fileName, QString *errorString = 0) override;
 
 private:
 	QJSEngine* m_engine;

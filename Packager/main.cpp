@@ -45,7 +45,7 @@ void copyFiles(const QStringList& files, const QDir& fromDir, const QDir& toDir,
         out.flush();
         abort();
     }
-    foreach (const QString& file, files) {
+	for (const QString& file : files) {
         if (!silent) {
             out << intendent << "Copying " << fromDir.absoluteFilePath(file) << " to " << toDir.absoluteFilePath(file) << "...\n";
         }
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     mappings.append(FileGroup("qml", &GetFiles::qmlFiles));
     mappings.append(FileGroup("translations", &GetFiles::translationFiles));
     QStringList modules;
-    foreach (const FileGroup& files, mappings) {
+	for (const FileGroup& files : mappings) {
         modules.append((files.fileGetter)().keys());
     }
     modules.removeDuplicates();
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     out << "Copying files for the following modules: " << modules.join(", ") << "\n" << flush;
 
     QDir baseDir;
-    foreach (const QString& module, modules) {
+	for (const QString& module : modules) {
         if (baseDir.exists(module + ".tar.gz")) {
             out << "Skiping already existing module " << module << "\n" << flush;
             continue;
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
         QDir dir(baseDir);
         dir.cd(module);
 
-        foreach (const FileGroup& files, mappings) {
+		for (const FileGroup& files : mappings) {
             QStringList fs = (files.fileGetter)()[module];
             if (fs.isEmpty()) {
                 continue;
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
             QTextStream js(&installFile);
 
             js << "FileSystem.mkpath(Paths.installPath);\n";
-            foreach (const FileGroup& groups, mappings) {
+			for (const FileGroup& groups : mappings) {
                 if (groups.fileGetter().contains(module)) {
                     js << "FileSystem.install(\"" << groups.name << "\", Paths.installPath + \"/" << groups.name << "\");\n";
                 }
@@ -181,9 +181,9 @@ int main(int argc, char *argv[])
 
             QTextStream js(&removalFile);
 
-            foreach (const FileGroup& group, mappings) {
+			for (const FileGroup& group : mappings) {
                 QStringList files = (group.fileGetter)()[module];
-                foreach (const QString& file, files) {
+				for (const QString& file : files) {
                     js << "FileSystem.remove(Paths.installPath + \"/" << group.name << "/" << file << "\");\n";
                 }
             }
@@ -197,10 +197,10 @@ int main(int argc, char *argv[])
         {
             KArchive* arch = new KTar(baseDir.absoluteFilePath(QString("%1-%2-%3.tar.gz").arg(module, version, platform)));
             arch->open(QIODevice::ReadWrite);
-            foreach (const QString& directory, dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs)) {
+			for (const QString& directory : dir.entryList(QDir::NoDotAndDotDot | QDir::Dirs)) {
                 arch->addLocalDirectory(dir.absoluteFilePath(directory), directory);
             }
-            foreach (const QString& file, dir.entryList(QDir::NoDotAndDotDot | QDir::Files)) {
+			for (const QString& file : dir.entryList(QDir::NoDotAndDotDot | QDir::Files)) {
                 arch->addLocalFile(dir.absoluteFilePath(file), file);
             }
             arch->close();
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
         QMap<QString, QStringList> deps = GetFiles::dependencies();
         QMap<QString, QMap<QString, QStringList> > ndeps = GetFiles::nativeDependencies();
         QJsonArray root;
-        foreach (const QString& module, modules) {
+		for (const QString& module : modules) {
             QStringList dependencies = deps[module];
             dependencies.removeAll("");
             dependencies.removeDuplicates();
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
             m.insert("platform", platform);
             m.insert("url", QString("http://localhost/soqute/archives/%1-%2-%3.tar.gz").arg(module, version, platform));
             QJsonArray deps;
-            foreach (const QString& dep, dependencies) {
+			for (const QString& dep : dependencies) {
                 QJsonObject obj;
                 obj.insert("id", dep);
                 obj.insert("version", version);
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
             }
             m.insert("dependencies", deps);
             QJsonObject nativeDependencies;
-            foreach (const QString& manager, nDependencies.keys()) {
+			for (const QString& manager : nDependencies.keys()) {
                 QJsonArray packages = QJsonArray::fromStringList(nDependencies[manager]);
                 nativeDependencies.insert(manager, packages);
             }
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
             serverRoot.mkdir("archives");
         }
         serverRoot.cd("archives");
-        foreach (const QString& archive, baseDir.entryList(QStringList() << "*.tar.gz", QDir::Files)) {
+		for (const QString& archive : baseDir.entryList(QStringList() << "*.tar.gz", QDir::Files)) {
             out << "  Installing " << archive << " to server...\n" << flush;
             if (serverRoot.exists(archive)) {
                 serverRoot.remove(archive);

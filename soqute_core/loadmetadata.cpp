@@ -43,7 +43,7 @@ void LoadMetadata::downloadMetadata()
 {
 	addMessage(FetchingPackages);
     m_numRequests = m_urls.size();
-    foreach (const QUrl& url, m_urls) {
+	for (const QUrl& url : m_urls) {
         QNetworkRequest request(url);
         QNetworkReply* reply = m_manager->get(request);
         connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(progress(qint64,qint64)));

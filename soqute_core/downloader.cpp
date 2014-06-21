@@ -88,7 +88,7 @@ QString Downloader::messageToString(const Downloader::Message msg, const QVarian
 
 void Downloader::downloadAndInstall()
 {
-    foreach (PackagePointer package, m_packagesToDownload) {
+	for (PackagePointer package : m_packagesToDownload) {
 		if (package->url().isEmpty()) {
             m_packagesToDownload.removeAll(package);
 		}
@@ -100,7 +100,7 @@ void Downloader::downloadAndInstall()
 	}
 
 	addMessage(FetchingPackages);
-    foreach (PackagePointer package, m_packagesToDownload) {
+	for (PackagePointer package : m_packagesToDownload) {
 		QNetworkRequest request(package->url());
 		request.setHeader(QNetworkRequest::UserAgentHeader, QString("%1 version %2 (QNetworkAccessManager)").arg(qApp->applicationName(), qApp->applicationVersion()));
 		QNetworkReply* reply = m_manager->get(request);
@@ -199,7 +199,7 @@ bool Downloader::saveToFile(const QByteArray &data, const QString& fileName, QSt
 
 void Downloader::abortNetworkRequests()
 {
-	foreach (QNetworkReply* reply, m_unarrivedReplies) {
+	for (QNetworkReply* reply : m_unarrivedReplies) {
 		reply->abort();
 		reply->deleteLater();
 	}

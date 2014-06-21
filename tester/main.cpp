@@ -105,7 +105,7 @@ bool compareDirectories(const QDir& d1, const QDir& d2)
         out << d1.absolutePath() << ": " << d1.entryList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs).join(", ") << "\n" << d2.absolutePath() << ": " << d2.entryList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs).join(", ") << endl << flush;
         return false;
     } else {
-        foreach(const QFileInfo & info, d1.entryInfoList(QDir::NoDotAndDotDot)) {
+		for(const QFileInfo & info : d1.entryInfoList(QDir::NoDotAndDotDot)) {
             if (!compareEntry(info, QFileInfo(d2, info.fileName()))) {
                 return false;
             }

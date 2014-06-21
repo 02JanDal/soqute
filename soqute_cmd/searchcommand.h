@@ -10,8 +10,8 @@ public:
 	explicit SearchCommand(ConfigurationHandler* configHandler, PackageList* packages, QObject *parent = 0);
 
 protected:
-    virtual void setupParser();
-	virtual bool executeImplementation();
+    virtual void setupParser() override;
+	virtual bool executeImplementation() override;
 };
 
 #endif // SEARCHCOMMAND_H

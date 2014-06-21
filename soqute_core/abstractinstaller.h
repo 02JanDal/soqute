@@ -11,7 +11,7 @@ class AbstractInstaller : public QThread
 public:
 	explicit AbstractInstaller(QObject *parent = 0);
 
-	virtual void run();
+	virtual void run() override;
 
 public slots:
 	virtual void install(const Package* package, const QString& fileName, QString* errorString = 0) = 0;

@@ -82,13 +82,13 @@ void readRepositories(const ConfigurationHandler* configHandler)
 {
     std::cout << "Repositories:" << std::endl;
     const QList<QUrl> repositories = configHandler->repositoryUrls();
-    foreach (const QUrl& repository, repositories) {
+	for (const QUrl& repository : repositories) {
         std::cout << "  " << qPrintable(repository.toString()) << std::endl;
     }
 }
 void addRepositories(const QStringList& repos, ConfigurationHandler* configHandler)
 {
-    foreach (const QString& repo, repos) {
+	for (const QString& repo : repos) {
         configHandler->addRepositoryUrl(QUrl::fromUserInput(repo));
     }
 }
@@ -154,7 +154,7 @@ bool ConfigCommand::executeImplementation()
     }
 
 	if (key == "all" && operation == Read) {
-        foreach (Setting setting, settings.values()) {
+		for (Setting setting : settings.values()) {
             if (setting.readFunction == 0) {
                 std::cout << qPrintable(settings.key(setting)) << ": " << qPrintable((configHandler->*setting.readDefaultFunction)()) << std::endl;
             } else {

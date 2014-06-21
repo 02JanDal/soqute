@@ -58,8 +58,8 @@ bool RemoveCommand::executeImplementation()
         //           qtquick1/5.1.0
         QRegularExpression exp("([a-z0-9\\-_\\+]*)(/[a-z0-9\\-\\+\\.]*)?(#[a-z0-9\\-\\+]*)?");
 
-        foreach (PackagePointer entity, packages->entities()) {
-			foreach (const QString& argument, parser->positionalArguments()) {
+		for (PackagePointer entity : packages->entities()) {
+			for (const QString& argument : parser->positionalArguments()) {
                 QRegularExpressionMatch match = exp.match(argument);
                 const QString id = match.captured(1);
                 const QString version = match.captured(2).remove(0, 1);
@@ -116,7 +116,7 @@ bool RemoveCommand::executeImplementation()
             out << "You have choosen to remove the following packages:\n"
                 << "  " << flush;
             QStringList packages;
-            foreach (PackagePointer package, pkgs) {
+			for (PackagePointer package : pkgs) {
                 packages.append(QString("%1 v%2 (%3)").arg(package->id(), package->version(), package->platform()));
             }
             out << packages.join(", ") << '\n' << flush;

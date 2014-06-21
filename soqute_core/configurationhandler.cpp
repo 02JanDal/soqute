@@ -36,7 +36,7 @@ void ConfigurationHandler::addRepositoryUrl(const QUrl &url)
 
     // remove duplicates
     QList<QVariant> out;
-    foreach (const QVariant& url, prevValue) {
+	for (const QVariant& url : prevValue) {
         if (!out.contains(url)) {
             out.append(url);
         }
@@ -56,7 +56,7 @@ QList<QUrl> ConfigurationHandler::repositoryUrls() const
 {
     QList<QVariant> variantList = m_settings->value("Repositories").toList();
     QList<QUrl> urlList;
-    foreach (const QVariant& variant, variantList) {
+	for (const QVariant& variant : variantList) {
         urlList.append(variant.toUrl());
     }
     return urlList;

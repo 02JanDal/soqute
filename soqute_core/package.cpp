@@ -19,9 +19,9 @@ Package::Package(PackageList *list, QObject *parent) :
 QList<const Package *> Package::recursiveDependencies() const
 {
     QList<const Package*> deps;
-    foreach (const Dependency* dep, m_dependencies) {
+	for (const Dependency* dep : m_dependencies) {
         const Package* pkg = m_list->package(dep, m_platform);
-        foreach (PackagePointer pkgDep, pkg->recursiveDependencies()) {
+		for (PackagePointer pkgDep : pkg->recursiveDependencies()) {
             deps.prepend(pkgDep);
         }
         deps.prepend(pkg);
@@ -53,7 +53,7 @@ bool PackageList::parse(const QByteArray &data)
     // it's easier to work with an variant list than json directly
     QVariantList entities = doc.array().toVariantList();
 
-    foreach (const QVariant& entity, entities) {
+	for (const QVariant& entity : entities) {
         QMap<QString, QVariant> map = entity.toMap();
         Package* meta = new Package(this);
         meta->setId(map["id"].toString());
@@ -64,7 +64,7 @@ bool PackageList::parse(const QByteArray &data)
         if (map.contains("dependencies")) {
             QList<Dependency*> dependencies;
             QVariantList deps = map["dependencies"].toList();
-            foreach (const QVariant& dep, deps) {
+			for (const QVariant& dep : deps) {
                 QMap<QString, QVariant> depMap = dep.toMap();
                 Dependency* dependency = new Dependency(meta);
                 dependency->setId(depMap["id"].toString());
@@ -76,7 +76,7 @@ bool PackageList::parse(const QByteArray &data)
         if (map.contains("nativeDependencies")) {
             QMap<QString, QStringList> nativeDependencies;
             QMap<QString, QVariant> deps = map["nativeDependencies"].toMap();
-            foreach (const QString& dep, deps.keys()) {
+			for (const QString& dep : deps.keys()) {
                 const QString pkgsystem = dep;
                 const QStringList ids = deps[dep].toStringList();
                 nativeDependencies.insert(pkgsystem, ids);
@@ -98,7 +98,7 @@ PackagePointer PackageList::package(const QString &id, const QString &version, c
 	}
 
     const Package* result = 0;
-    foreach (const Package* entity, m_entities) {
+	for (PackagePointer entity : m_entities) {
         // check if the id and the platform match. empty platform means any platform (most likely sources)
         if (entity->id() == id && (entity->platform() == pltfrm || entity->platform().isEmpty())) {
 			if (version.isNull() || version.isEmpty() || (version.endsWith('+') && Util::isVersionHigherThan(entity->version(), QString(version).remove('+')))) {
@@ -125,7 +125,7 @@ PackagePointerList PackageList::otherPackages(PackagePointer package) const
 {
 	PackagePointerList packages;
 
-	foreach (PackagePointer entity, m_entities) {
+	for (PackagePointer entity : m_entities) {
         if (entity->id() == package->id() && entity != package) {
             packages.append(entity);
         }
@@ -138,7 +138,7 @@ PackagePointerList PackageList::findPackages(const QStringList &queries, const b
 {
 	PackagePointerList packages;
 
-	foreach (PackagePointer entity, m_entities) {
+	for (PackagePointer entity : m_entities) {
         if (matchInQueries(entity, queries, matchDescription)) {
             packages.append(entity);
         }
@@ -149,7 +149,7 @@ PackagePointerList PackageList::findPackages(const QStringList &queries, const b
 
 bool PackageList::matchInQueries(PackagePointer package, const QStringList &queries, const bool matchDescription) const
 {
-    foreach (const QString& query, queries) {
+	for (const QString& query : queries) {
         // match the id
         QRegularExpression exp(QString("^.*%1.*$").arg(query), QRegularExpression::CaseInsensitiveOption);
         if (exp.match(package->id()).hasMatch()) {

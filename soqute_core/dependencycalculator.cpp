@@ -19,7 +19,7 @@ bool DependencyCalculator::calculateDependencies(const Direction direction, cons
     if (direction == Forward) {
         PackagePointerList result;
         result.append(m_startingPoint);
-        foreach (PackagePointer package, m_startingPoint) {
+		for (PackagePointer package : m_startingPoint) {
             bool ok = true;
             PackagePointerList res = calculateDependenciesForward(package, &ok, notFoundPackage);
             if (!ok) {
@@ -29,7 +29,7 @@ bool DependencyCalculator::calculateDependencies(const Direction direction, cons
         }
 
         m_result.clear();
-        foreach (const Package* package, result) {
+		for (const Package* package : result) {
             if (!m_result.contains(package)) {
                 m_result.append(package);
             }
@@ -37,12 +37,12 @@ bool DependencyCalculator::calculateDependencies(const Direction direction, cons
     } else {
         PackagePointerList res;
 
-        foreach (PackagePointer package, m_startingPoint) {
+		for (PackagePointer package : m_startingPoint) {
             res.append(calculateDependenciesReverse(package));
         }
 
         m_result.clear();
-        foreach (const Package* package, res) {
+		for (const Package* package : res) {
             if (!m_result.contains(package) && installed->isPackageInstalled(package->id(), package->version(), package->platform())) {
                 m_result.append(package);
             }
@@ -61,7 +61,7 @@ void DependencyCalculator::setStartingPoint(const PackagePointerList packages)
 PackagePointerList DependencyCalculator::calculateDependenciesForward(const Package *package, bool* ok, const Package **notFoundPackage)
 {
     PackagePointerList packages;
-    foreach (const Dependency* dependency, package->dependencies()) {
+	for (const Dependency* dependency : package->dependencies()) {
         const Package* pkg = m_packages->package(dependency, package->platform());
         if (pkg == 0) {
             emit noSuchPackage(dependency->id(), dependency->version(), package->platform());
@@ -88,9 +88,9 @@ PackagePointerList DependencyCalculator::calculateDependenciesReverse(const Pack
 {
     PackagePointerList out;
     out.append(package);
-    foreach (PackagePointer pkg, m_packages->entities()) {
+	for (PackagePointer pkg : m_packages->entities()) {
         if (pkg->platform() == package->platform() && !out.contains(pkg)) {
-            foreach (const Dependency* dep, pkg->dependencies()) {
+			for (const Dependency* dep : pkg->dependencies()) {
                 if (dep->id() == package->id() && dep->version() == package->version()) {
                     out.append(calculateDependenciesReverse(pkg, intendent + "  "));
                 }

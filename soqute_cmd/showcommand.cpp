@@ -60,7 +60,7 @@ bool ShowCommand::executeImplementation()
 		const QList<const Package*> others = packages->otherPackages(package);
 		QStringList allPlatforms;
 		QStringList allVersions;
-		foreach (const Package* pkg, others) {
+		for (PackagePointer pkg : others) {
 			allPlatforms.append(pkg->platform());
 			allVersions.append(pkg->version());
 		}
@@ -81,27 +81,27 @@ bool ShowCommand::executeImplementation()
 			<< "Platform:            " << package->platform() << "\n"
 			<< "Other platforms:     " << allPlatforms.join(", ") << "\n"
 			<< "Dependencies:        " << flush;
-        foreach (const PackagePointer p, package->recursiveDependencies()) {
+		for (PackagePointer p : package->recursiveDependencies()) {
 			out << p->id() << " ";
 		}
 		out << "\n"
 			<< "Native dependencies: \n" << flush;
 		QMap<QString, QStringList> nDeps;
-        foreach (const PackagePointer p, package->recursiveDependencies()) {
-			foreach (const QString& mngr, p->nativeDependencies().keys()) {
+		for (const PackagePointer p : package->recursiveDependencies()) {
+			for (const QString& mngr : p->nativeDependencies().keys()) {
 				nDeps[mngr].append(p->nativeDependencies()[mngr]);
                 nDeps[mngr].removeDuplicates();
 			}
 		}
 
-		foreach (const QString& mngr, nDeps.keys()) {
+		for (const QString& mngr : nDeps.keys()) {
 			out << "    " << mngr << ": " << nDeps[mngr].join(", ") << "\n" << flush;
 		}
 	} else {
 		// only output packages
 		QMap<QString, QStringList> nDeps;
-        foreach (const PackagePointer p, package->recursiveDependencies()) {
-			foreach (const QString& mngr, p->nativeDependencies().keys()) {
+		for (const PackagePointer p : package->recursiveDependencies()) {
+			for (const QString& mngr : p->nativeDependencies().keys()) {
 				nDeps[mngr].append(p->nativeDependencies()[mngr]);
 			}
 		}

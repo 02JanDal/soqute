@@ -21,7 +21,7 @@
 class CommandLineAuthenticator : public AbstractAuthenticator
 {
 public:
-	void authenticate(QNetworkReply *reply, QAuthenticator *authenticator)
+	void authenticate(QNetworkReply *reply, QAuthenticator *authenticator) override
 	{
 		out << "You need to authenticate to access " << reply->url().toString() << ".\n";
 		if (!authenticator->realm().isNull()) {
@@ -77,7 +77,7 @@ bool InstallCommand::executeImplementation()
 	// dependency calculation
 	{
         PackagePointerList tmp = pkgs;
-        foreach (PackagePointer pkg, pkgs) {
+		for (PackagePointer pkg : pkgs) {
             tmp.append(pkg->recursiveDependencies());
         }
         pkgs = Util::cleanPackagePointerList(tmp);
@@ -85,7 +85,7 @@ bool InstallCommand::executeImplementation()
 
     // remove installed packages
     {
-        foreach (PackagePointer pkg, pkgs) {
+		for (PackagePointer pkg : pkgs) {
             if (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(pkg->id(), pkg->version(), pkg->platform())) {
                 pkgs.removeAll(pkg);
             }
@@ -103,7 +103,7 @@ bool InstallCommand::executeImplementation()
 			out << "You have choosen to install the following packages:\n"
 				<< "  " << flush;
 			QStringList packages;
-			foreach (PackagePointer package, pkgs) {
+			for (PackagePointer package : pkgs) {
 				packages.append(QString("%1 v%2 (%3)").arg(package->id(), package->version(), package->platform()));
 			}
             out << packages.join(", ") << '\n' << flush;
@@ -118,7 +118,7 @@ bool InstallCommand::executeImplementation()
 	{
 		const QString pkgManager = ConfigurationHandler::instance()->packageManager();
 		QStringList packages;
-		foreach (PackagePointer package, pkgs) {
+		for (PackagePointer package : pkgs) {
 			packages.append(package->nativeDependencies()[pkgManager]);
 		}
 		packages.removeDuplicates();

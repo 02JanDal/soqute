@@ -110,9 +110,9 @@ bool isVersionHigherThan(const QString& v1, const QString& v2, const bool develo
 
 QList<const Package *> cleanPackagePointerList(const QList<const Package *> packages)
 {
-	QMap<QString, const Package*> out;
+	QMap<QString, PackagePointer> out;
 
-	foreach (const Package* package, packages) {
+	for (PackagePointer package : packages) {
 		const QString identifier = QString("%1#%2").arg(package->id(), package->platform());
 		if (!out.contains(identifier) || isVersionHigherThan(package->version(), out[identifier]->version())) {
 			out.insert(identifier, package);
@@ -165,7 +165,7 @@ bool stringListToPackageList(PackageList *packages, const QStringList& packagesI
 
 	InstalledPackages* installed = ConfigurationHandler::instance()->installedPackages();
 
-	foreach (const QString& arg, packagesIn) {
+	for (const QString& arg : packagesIn) {
         match = exp.match(arg);
 		if (!match.hasMatch()) {
 			if (notFoundPackage != 0) {
@@ -206,17 +206,17 @@ void ensureExists(const QString &directory)
 }
 void removeDirectoryRecursive(QDir directory)
 {
-    foreach (const QString& entry, directory.entryList(QDir::Files)) {
+	for (const QString& entry : directory.entryList(QDir::Files)) {
         directory.remove(entry);
     }
-    foreach (const QString& entry, directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+	for (const QString& entry : directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         removeDirectoryRecursive(QDir(directory.absoluteFilePath(entry)));
     }
     QDir().rmdir(directory.absolutePath());
 }
 void removeEmptyRecursive(const QDir &dir)
 {
-    foreach (const QString& child, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+	for (const QString& child : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
         removeEmptyRecursive(QDir(dir.absoluteFilePath(child)));
     }
     if (dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files).isEmpty()) {
@@ -258,7 +258,7 @@ void mergeDirectoryInto(const QDir &source, const QDir &destination)
         QDir().mkdir(destination.absolutePath());
     }
     // and then move all the contents
-    foreach (const QFileInfo& entry, source.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+	for (const QFileInfo& entry : source.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
         if (entry.isFile()) {
             QFile::copy(entry.absoluteFilePath(), destination.absoluteFilePath(entry.fileName()));
         } else {
@@ -271,7 +271,7 @@ template<typename T>
 QList<T> removeDuplicatesFromList(const QList<T> &in)
 {
     QList<T> out;
-    foreach (const T& t, in) {
+	for (const T& t : in) {
         if (!out.contains(t)) {
             out.append(t);
         }
@@ -282,7 +282,7 @@ QList<T> removeDuplicatesFromList(const QList<T> &in)
 PackagePointerList removeDuplicatesFromList(const PackagePointerList& in)
 {
     PackagePointerList out;
-    foreach (PackagePointer package, in) {
+	for (PackagePointer package : in) {
         if (!out.contains(package)) {
             out.append(package);
         }

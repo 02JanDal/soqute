@@ -9,11 +9,11 @@ class ConfigCommand : public BaseCommand
 public:
 	ConfigCommand(ConfigurationHandler* configHandler, PackageList* packages, QObject* parent = 0);
 
-    bool needMetadata() const { return false; }
+    bool needMetadata() const override { return false; }
 
 protected:
-    virtual void setupParser();
-	virtual bool executeImplementation();
+    virtual void setupParser() override;
+	virtual bool executeImplementation() override;
 };
 
 #endif // CONFIG_H

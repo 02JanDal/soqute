@@ -35,11 +35,11 @@ QList<const Package *> InstalledPackages::installedPackages(PackageList *package
 
 	QList<const Package*> out;
 
-	foreach (const QString& platform, m_settings->childGroups()) {
+	for (const QString& platform : m_settings->childGroups()) {
 		m_settings->beginGroup(platform);
-		foreach (const QString& id, m_settings->childGroups()) {
+		for (const QString& id : m_settings->childGroups()) {
 			m_settings->beginGroup(id);
-			foreach (const QString& version, m_settings->childKeys()) {
+			for (const QString& version : m_settings->childKeys()) {
 				out.append(packages->package(id, version, platform));
 			}
 			m_settings->endGroup();
@@ -67,7 +67,7 @@ bool InstalledPackages::isNewestInstalled(const QString &id, const QString &vers
     }
     m_settings->beginGroup(platform);
     QStringList installedVersions = m_settings->childKeys();
-    foreach (const QString& installedVersion, installedVersions) {
+	for (const QString& installedVersion : installedVersions) {
         if (Util::isVersionHigherThan(installedVersion, version)) {
             m_settings->endGroup();
             m_settings->endGroup();

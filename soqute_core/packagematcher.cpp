@@ -20,7 +20,7 @@ PackagePointerList PackageMatcher::matchPackages(const QString &name, const QStr
     // pending packages are those where we still have to check whether there isn't any higher version
     QMap<QString, PackagePointer> pending;
 	const PackagePointerList packages = m_packages->entities();
-	foreach (PackagePointer pkg, packages) {
+	for (PackagePointer pkg : packages) {
         if (pkg->id() == name && (pkg->platform().isEmpty() || _platform == pkg->platform())) {
             if (version.isEmpty()) {
                 const QString identifier = QString("%1#%2").arg(pkg->id(), pkg->platform());

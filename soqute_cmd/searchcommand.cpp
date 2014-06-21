@@ -48,7 +48,7 @@ bool SearchCommand::executeImplementation()
 	int longestId = 0;
 	int longestPlatform = 0;
 
-    foreach (const  Package* package, pkgs) {
+	for (const  Package* package : pkgs) {
         longestId = qMax(longestId, package->id().length());
 		longestPlatform = qMax(longestPlatform, package->platform().length());
 	}
@@ -56,7 +56,7 @@ bool SearchCommand::executeImplementation()
 	// we use a map here to sort the results
 	QMultiMap<QString, QString> rows;
 	rows.insert("", QString("\E[1m I  ") + padded("ID", longestId) + "  " + padded("Platform", longestPlatform) + "  Description\E[0m");
-	foreach (const Package* package, pkgs) {
+	for (const Package* package : pkgs) {
 		QString str = QString("  ") + padded(package->id(), longestId) + "  " + padded(package->platform(), longestPlatform) + "  " + package->description().split('\n')[0];
 		if (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(package->id(), package->version(), package->platform())) {
 			str = " i" + str;
@@ -66,7 +66,7 @@ bool SearchCommand::executeImplementation()
 		rows.insert(package->platform(), str);
 	}
 
-	foreach (const QString& row, rows) {
+	for (const QString& row : rows) {
 		out << row << "\n" << flush;
 	}
 
