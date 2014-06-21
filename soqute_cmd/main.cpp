@@ -1,11 +1,11 @@
 #include <QCoreApplication>
 #include <QStringList>
 #include <QDebug>
+#include <QCommandLineParser>
 
 #include "loadmetadata.h"
 #include "package.h"
 #include "configurationhandler.h"
-#include "qcommandlineparser.h"
 #include "util_cmd.h"
 
 #include "searchcommand.h"
@@ -15,49 +15,33 @@
 #include "removecommand.h"
 #include "textstream.h"
 
-QStringList parseCommandLineArguments(const QStringList& arguments, const bool showHelpAndExit = false)
+QCommandLineParser *createGeneralParser(const QString &programName)
 {
-    QCommandLineParser parser;
-	parser.addHelpOption(QObject::tr("Searches for, installs and removes Qt related stuff. You may want to try \"%1 help\"").arg(arguments.first()));
-    parser.addVersionOption();
-    parser.setRemainingArgumentsHelpText(QObject::tr("[<command>]"));
+	QCommandLineParser *parser = new QCommandLineParser;
+	parser->setApplicationDescription(QObject::tr("Searches for, installs and removes Qt related stuff. You may want to try \"%1 help\"").arg(programName));
+	parser->addHelpOption();
+	parser->addVersionOption();
+	parser->addPositionalArgument(QObject::tr("command"), QObject::tr("The command to execute"), QObject::tr("[<command>]"));
 
-    if (showHelpAndExit) {
-        parser.showHelp();
-        exit(0);
-    }
-
-    parser.parse(arguments);
-    Util::handleCommonArguments(&parser);
-
-    if (parser.remainingArguments().isEmpty()) {
-		out << "No command given\n\n" << flush;
-        parser.showHelp();
-        exit(-1);
-    }
-
-    return parser.remainingArguments();
+	return parser;
 }
 
-int handleHelpCommand(const QStringList& arguments, const QMap<QString, BaseCommand*> commands)
+int handleHelpCommand(const QString &programName, const QStringList& arguments, const QMap<QString, BaseCommand*> commands)
 {
     QCommandLineParser helpParser;
-    helpParser.addHelpOption(QObject::tr("Shows help for %1").arg(qApp->applicationName()));
-    helpParser.addVersionOption();
-    helpParser.setRemainingArgumentsHelpText(QObject::tr("[<command>]"));
+	helpParser.setApplicationDescription(QObject::tr("Searches for, installs and removes Qt related stuff. You may want to try \"%1 help\"").arg(programName));
+	helpParser.addHelpOption();
+	helpParser.addVersionOption();
+	helpParser.addPositionalArgument(QObject::tr("command"), QObject::tr("The command to execute"), QObject::tr("[<command>]"));
     helpParser.parse(arguments);
     Util::handleCommonArguments(&helpParser);
-    if (helpParser.remainingArguments().isEmpty()) {
-        helpParser.showHelp();
-		out << "\nChoose from the following for <command>:\n" << flush;
-		out << "\t" << qPrintable(QStringList(commands.keys()).join("\n\t")) << "\n" << flush;
+	if (helpParser.positionalArguments().isEmpty() || helpParser.positionalArguments().first() == "help") {
+		out << helpParser.helpText() << endl
+			<< "Choose from the following for <command>:" << endl
+			<< "\t" << QStringList(commands.keys()).join("\n\t") << endl;
     } else {
-        const QString command = helpParser.remainingArguments().first();
-        if (command == "help") {
-            helpParser.showHelp();
-			out << "\nChoose from the following for <command>:\n" << flush;
-			out << "\t" << QStringList(commands.keys()).join("\n\t") << "\n" << flush;
-        } else if (commands.contains(command)) {
+		const QString command = helpParser.positionalArguments().first();
+		if (commands.contains(command)) {
             commands[command]->showHelp();
         } else {
 			out << "\nUnknown command. Choose from the following:\n" << flush;
@@ -94,17 +78,22 @@ int main(int argc, char *argv[])
 
     QMap<QString, BaseCommand*> commands = setupCommands(configHandler, packages, root);
 
-    QStringList arguments = parseCommandLineArguments(a.arguments());
-    if (arguments.first() == "help") {
-        return handleHelpCommand(arguments, commands);
+	const QStringList arguments = a.arguments();
+
+	if (arguments.size() <= 1) {
+		out << "No command given. Try \"" << arguments.first() << " help\"" << endl;
+		return -1;
+	}
+
+	const QString command = arguments.at(1);
+	if (command == "help") {
+		createGeneralParser(arguments.first())->showHelp();
     }
 
-    const QString command = arguments.first();
     // command doesn't exist. notify user, show help and exit
     if (!commands.contains(command)) {
         out << "Unknown command \"" << command << "\".\n" << flush;
-        parseCommandLineArguments(QStringList() << a.arguments().first(), true);
-        return -1;
+		createGeneralParser(arguments.first())->showHelp(-1);
     }
 
     BaseCommand* cmd = commands[command];
@@ -121,7 +110,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-    if (!cmd->execute(arguments)) {
+	if (!cmd->execute(arguments.mid(1))) {
 		return 1;
 	}
     

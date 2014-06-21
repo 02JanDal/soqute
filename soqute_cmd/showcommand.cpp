@@ -22,16 +22,17 @@ ShowCommand::ShowCommand(ConfigurationHandler *configHandler, PackageList* packa
 void ShowCommand::setupParser()
 {
     parser = new QCommandLineParser();
+	parser->setApplicationDescription(tr("Shows information about a package"));
     parser->addVersionOption();
-    parser->addHelpOption(tr("Shows information about a package"));
-	parser->setRemainingArgumentsHelpText(tr("<package-name>[/<version>][#<platform>]"));
+	parser->addHelpOption();
+	parser->addPositionalArgument(tr("package identifer"), tr("The identifier of the package"), tr("<package-name>[/<version>][#<platform>]"));
     parser->addOption(QCommandLineOption(QStringList() << "nativeDependencies", tr("Only outputs the native packages for piping to the package manager"),
                                          tr("package-manager"), configHandler->packageManager()));
 }
 
 bool ShowCommand::executeImplementation()
 {
-	if (parser->remainingArguments().isEmpty()) {
+	if (parser->positionalArguments().isEmpty()) {
 		out << "You need to specify a package\n" << flush;
 		return false;
     }
@@ -42,7 +43,7 @@ bool ShowCommand::executeImplementation()
 	//           qtpim#linux-g++-32
 	//           qtquick1/5.1.0
 	QRegularExpression exp("([a-z0-9\\-_\\+]*)(/[a-z0-9\\-\\+\\.]*)?(#[a-z0-9\\-\\+]*)?");
-    QRegularExpressionMatch match = exp.match(parser->remainingArguments()[0]);
+	QRegularExpressionMatch match = exp.match(parser->positionalArguments()[0]);
 	const QString id = match.captured(1);
 	const QString version = match.captured(2).remove(0, 1);
 	const QString platform = match.captured(3).remove(0, 1);

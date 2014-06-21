@@ -45,9 +45,10 @@ InstallCommand::InstallCommand(ConfigurationHandler *configHandler, PackageList*
 void InstallCommand::setupParser()
 {
     parser = new QCommandLineParser();
-    parser->addVersionOption();
-    parser->addHelpOption(tr("Installs one or more packages"));
-    parser->setRemainingArgumentsHelpText(tr("<package>*\n\n\t<package> = <package-name>[/<version>][#<platform>]"));
+	parser->setApplicationDescription(tr("Installs one or more packages"));
+	parser->addVersionOption();
+	parser->addHelpOption();
+	parser->addPositionalArgument(tr("package identifiers"), tr("Identifiers for all packages to install"), tr("<package-name>[/<version>][#<platform>]*"));
 	parser->addOption(QCommandLineOption(QStringList() << "s" << "silent", tr("Does not ask for any information, no user interaction required")));
 }
 
@@ -67,7 +68,7 @@ bool InstallCommand::executeImplementation()
 	{
 		QString notFoundPackage;
         QStringList alreadyInstalledPackagesOut;
-		if (!Util::stringListToPackageList(packages, parser->remainingArguments(), pkgs, alreadyInstalledPackagesOut, &notFoundPackage)) {
+		if (!Util::stringListToPackageList(packages, parser->positionalArguments(), pkgs, alreadyInstalledPackagesOut, &notFoundPackage)) {
 			out << "The following package could not be found: " << notFoundPackage << "\n" << flush;
 			return false;
 		}

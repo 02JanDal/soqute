@@ -28,8 +28,9 @@ RemoveCommand::RemoveCommand(ConfigurationHandler* configHandler, PackageList* p
 void RemoveCommand::setupParser()
 {
     parser = new QCommandLineParser();
-    parser->addVersionOption();
-    parser->addHelpOption(tr("Removes packages"));
+	parser->setApplicationDescription(tr("Removes packages"));
+	parser->addVersionOption();
+	parser->addHelpOption();
     parser->addOption(QCommandLineOption(QStringList() << "no-platform-behavior",
                                          tr("Describes how I should behave if you don't give me a platform. Possible options: host (use the host platform, the default), abort"),
                                          tr("behavior"), "host"));
@@ -37,12 +38,12 @@ void RemoveCommand::setupParser()
                                          tr("Describes how I should behave if you don't give me a version. Possible options: clean (removes all except the newest), all (removes all), abort (the default)"),
                                          tr("behavior"), "abort"));
     parser->addOption(QCommandLineOption(QStringList() << "silent", tr("Won't ask you for questions")));
-    parser->setRemainingArgumentsHelpText(tr("<package-name>[/<version>][#<platform>]*"));
+	parser->addPositionalArgument(tr("package identifiers"), tr("Identifiers for all packages to remove"), tr("<package-name>[/<version>][#<platform>]*"));
 }
 
 bool RemoveCommand::executeImplementation()
 {
-    if (parser->remainingArguments().isEmpty()) {
+	if (parser->positionalArguments().isEmpty()) {
         out << "You need to specify at least one query\n" << flush;
         return false;
     }
@@ -58,7 +59,7 @@ bool RemoveCommand::executeImplementation()
         QRegularExpression exp("([a-z0-9\\-_\\+]*)(/[a-z0-9\\-\\+\\.]*)?(#[a-z0-9\\-\\+]*)?");
 
         foreach (PackagePointer entity, packages->entities()) {
-            foreach (const QString& argument, parser->remainingArguments()) {
+			foreach (const QString& argument, parser->positionalArguments()) {
                 QRegularExpressionMatch match = exp.match(argument);
                 const QString id = match.captured(1);
                 const QString version = match.captured(2).remove(0, 1);

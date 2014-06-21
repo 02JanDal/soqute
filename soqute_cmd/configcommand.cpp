@@ -105,9 +105,11 @@ ConfigCommand::ConfigCommand(ConfigurationHandler *configHandler, PackageList* p
 void ConfigCommand::setupParser()
 {
     parser = new QCommandLineParser();
-    parser->addVersionOption();
-    parser->addHelpOption(tr("Gives access to settings"));
-    parser->setRemainingArgumentsHelpText(tr("<key> [<value>*]"));
+	parser->setApplicationDescription(tr("Gives access to settings"));
+	parser->addVersionOption();
+	parser->addHelpOption();
+	parser->addPositionalArgument(tr("key"), tr("The key of the value to set"), tr("<key>"));
+	parser->addPositionalArgument(tr("values"), tr("The values to set"), tr("<value>*"));
     parser->addOption(QCommandLineOption(QStringList() << "s" << "set", tr("Sets value of key to the specified value")));
     parser->addOption(QCommandLineOption(QStringList() << "r" << "read",
                                          tr("Reads the value associated with the specified key (this is the default if no other option is given). You may use \"all\" as key to display all settings")));
@@ -132,7 +134,7 @@ bool ConfigCommand::executeImplementation()
 		return false;
     }
 
-    QStringList remainingArgs = parser->remainingArguments();
+	QStringList remainingArgs = parser->positionalArguments();
     if (remainingArgs.isEmpty()) {
         std::cout << "You need so specify a key" << std::endl;
 		return false;
@@ -146,7 +148,7 @@ bool ConfigCommand::executeImplementation()
 		return false;
     }
 
-    if ((operation == Set || operation == Add || operation == Delete) && parser->remainingArguments().isEmpty()) {
+	if ((operation == Set || operation == Add || operation == Delete) && parser->positionalArguments().isEmpty()) {
         std::cout << "You need so specify (a) value(s)" << std::endl;
 		return false;
     }

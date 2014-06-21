@@ -14,9 +14,10 @@ SearchCommand::SearchCommand(ConfigurationHandler *configHandler, PackageList *p
 void SearchCommand::setupParser()
 {
     parser = new QCommandLineParser();
+	parser->setApplicationDescription(tr("Searches for packages"));
     parser->addVersionOption();
-    parser->addHelpOption(tr("Searches for packages"));
-    parser->setRemainingArgumentsHelpText(tr("<query>*"));
+	parser->addHelpOption();
+	parser->addPositionalArgument(tr("query"), tr("The queries used to search for packages"), tr("<query>*"));
     parser->addOption(QCommandLineOption(QStringList() << "d" << "matchDescription", tr("If specified, the description will be search, too")));
 }
 
@@ -32,12 +33,12 @@ QString padded(const QString& string, const int size, const QChar character = QC
 
 bool SearchCommand::executeImplementation()
 {
-	if (parser->remainingArguments().isEmpty()) {
+	if (parser->positionalArguments().isEmpty()) {
 		out << "You need to specify at least one query\n" << flush;
 		return false;
 	}
 
-	const QList<const Package*> pkgs = packages->findPackages(parser->remainingArguments(), parser->isSet("matchDescription"));
+	const QList<const Package*> pkgs = packages->findPackages(parser->positionalArguments(), parser->isSet("matchDescription"));
 
 	if (pkgs.isEmpty()) {
 		out << "No packages where found\n" << flush;
