@@ -1,11 +1,11 @@
 #include "configcommand.h"
 
-#include <QtCore/QDebug>
-#include <iostream>
+#include <QDebug>
+#include <QCommandLineParser>
 
 #include "configurationhandler.h"
-#include "qcommandlineparser.h"
 #include "util_cmd.h"
+#include "textstream.h"
 
 // TODO use Qt's property system?
 
@@ -116,7 +116,6 @@ void ConfigCommand::setupParser()
 
 bool ConfigCommand::executeImplementation()
 {
-	QTextStream out(stdout);
 	out.setFieldAlignment(QTextStream::AlignLeft);
 
 	QList<Setting *> settings = availableSettings();

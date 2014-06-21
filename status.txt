@@ -15,3 +15,8 @@ Other:
 
 * Detect stuff that needs to move to from cmd to core or the other way
 * Testing, testing, testing
+* Vendor in package identifier?
+* Re-do building
+    * JSON files describing the arguments
+    * Presets
+    * Build-From for binary packages

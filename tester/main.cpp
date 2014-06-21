@@ -7,7 +7,6 @@
 #include <QUrl>
 #include <QDebug>
 
-#include <cstdio>
 #include <iostream>
 
 QTextStream out(stdout);

@@ -1,7 +1,7 @@
 #ifndef PACKAGEMATCHER_H
 #define PACKAGEMATCHER_H
 
-#include <QtCore/QList>
+#include <QList>
 
 #include "soqute_core_global.h"
 

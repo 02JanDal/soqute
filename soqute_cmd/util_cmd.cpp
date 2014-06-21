@@ -1,9 +1,8 @@
 #include "util_cmd.h"
 
 #include <QRegularExpression>
+#include <QCommandLineParser>
 
-#include <qcommandlineparser.h>
-#include <cstdio>
 #include <iostream>
 
 #include "textstream.h"
@@ -14,19 +13,19 @@ namespace Util
 void handleCommonArguments(QCommandLineParser *parser)
 {
     if (parser->isSet(QStringLiteral("version"))) {
-        printf("%s %s\n", qPrintable(QCoreApplication::applicationName()), qPrintable(QCoreApplication::applicationVersion()));
+		out << QCoreApplication::applicationName() << " " << QCoreApplication::applicationVersion() << endl << flush;
         ::exit(0);
     }
     if (!parser->applicationDescription().isEmpty() && parser->isSet(QStringLiteral("help"))) {
-        parser->showHelp();
+		out << parser->helpText();
         ::exit(0);
     }
     if (parser->unknownOptionNames().count() == 1) {
-        fprintf(stderr, "Unknown option '%s'.\n", qPrintable(parser->unknownOptionNames().first()));
+		out << "Unknown option: '" << parser->unknownOptionNames().first() << "'." << endl << flush;
         ::exit(1);
     }
     if (parser->unknownOptionNames().count() > 1) {
-        fprintf(stderr, "Unknown options: %s.\n", qPrintable(parser->unknownOptionNames().join(QLatin1String(", "))));
+		out << "Unknown options: '" << parser->unknownOptionNames().join(", ") << "'." << endl << flush;
         ::exit(1);
     }
 }

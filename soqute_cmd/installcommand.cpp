@@ -4,11 +4,11 @@
 #include <QNetworkReply>
 #include <QAuthenticator>
 #include <QDebug>
+#include <QCommandLineParser>
 
 #include <cstdio>
 #include <iostream>
 
-#include "qcommandlineparser.h"
 #include "downloader.h"
 #include "util_core.h"
 #include "util_cmd.h"

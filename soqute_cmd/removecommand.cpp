@@ -4,10 +4,9 @@
 #include <QRegularExpressionMatch>
 #include <QDebug>
 #include <QDir>
+#include <QCommandLineParser>
 
 #include <iostream>
-
-#include <qcommandlineparser.h>
 
 #include "package.h"
 #include "remover.h"

@@ -1,7 +1,7 @@
 #include "dependencycalculator.h"
 
 #include "package.h"
-#include <QtCore/QList>
+#include <QList>
 #include <QDebug>
 
 #include "configurationhandler.h"

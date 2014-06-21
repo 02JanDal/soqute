@@ -1,9 +1,9 @@
 #ifndef PACKAGE_H
 #define PACKAGE_H
 
-#include <QtCore/QObject>
-#include <QtCore/QMap>
-#include <QtCore/QStringList>
+#include <QObject>
+#include <QMap>
+#include <QStringList>
 #include <QUrl>
 
 #include "soqute_core_global.h"

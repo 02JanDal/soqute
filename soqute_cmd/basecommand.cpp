@@ -1,10 +1,8 @@
 #include "basecommand.h"
 
 #include <QDebug>
+#include <QCommandLineParser>
 
-#include <cstdio>
-
-#include "qcommandlineparser.h"
 #include "configurationhandler.h"
 #include "util_cmd.h"
 

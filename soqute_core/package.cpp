@@ -1,12 +1,12 @@
 #include "package.h"
 
-#include <QtCore/QJsonArray>
-#include <QtCore/QJsonDocument>
-#include <QtCore/QJsonObject>
-#include <QtCore/QVariant>
-#include <QtCore/QDebug>
-#include <QtCore/QRegularExpression>
-#include <QtCore/QRegularExpressionMatch>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QVariant>
+#include <QDebug>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QUrl>
 
 #include "util_core.h"

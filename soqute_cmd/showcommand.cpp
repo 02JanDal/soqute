@@ -4,11 +4,11 @@
 #include <QString>
 #include <QRegularExpression>
 #include <QDebug>
+#include <QCommandLineParser>
 
 #include "taskhandler.h"
 #include "util_cmd.h"
 #include "configurationhandler.h"
-#include "qcommandlineparser.h"
 #include "package.h"
 #include "dependencycalculator.h"
 #include "installedpackages.h"

@@ -7,8 +7,8 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <QCryptographicHash>
-#include <QtConcurrent/QtConcurrent>
 #include <QSslError>
+#include <QStandardPaths>
 
 #include "package.h"
 #include "jsinstaller.h"

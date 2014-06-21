@@ -3,12 +3,12 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
-#include <QtQml/QJSEngine>
-#include <cstdio>
+#include <QJSEngine>
+
+#include <karchive.h>
+#include <ktar.h>
 
 #include "package.h"
-#include "karchive.h"
-#include "ktar.h"
 #include "configurationhandler.h"
 #include "util_core.h"
 

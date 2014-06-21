@@ -11,7 +11,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
-#include <cstdio>
 #include <iostream>
 
 #include <karchive.h>

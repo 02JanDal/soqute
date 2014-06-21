@@ -7,12 +7,12 @@
 #include <QDir>
 #include <QStandardPaths>
 
+#include <karchive.h>
+
 #include "package.h"
 #include "packagematcher.h"
 #include "installedpackages.h"
 #include "configurationhandler.h"
-
-#include <karchive.h>
 
 namespace Util
 {

@@ -1,7 +1,7 @@
 #ifndef SOQUTE_CORE_GLOBAL_H
 #define SOQUTE_CORE_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <QtGlobal>
 
 #if defined(SOQUTE_CORE_LIBRARY)
 #  define SOQUTE_CORESHARED_EXPORT Q_DECL_EXPORT

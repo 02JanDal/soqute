@@ -1,6 +1,7 @@
 #include "searchcommand.h"
 
-#include "qcommandlineparser.h"
+#include <QCommandLineParser>
+
 #include "package.h"
 #include "configurationhandler.h"
 #include "installedpackages.h"
