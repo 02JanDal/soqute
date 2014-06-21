@@ -6,7 +6,6 @@
 #include <QDebug>
 #include <QCommandLineParser>
 
-#include "taskhandler.h"
 #include "util_cmd.h"
 #include "configurationhandler.h"
 #include "package.h"
