@@ -11,31 +11,31 @@ class InstalledPackages;
 
 class SOQUTE_CORESHARED_EXPORT ConfigurationHandler : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-    explicit ConfigurationHandler(QObject *parent = 0);
-    ~ConfigurationHandler();
+	explicit ConfigurationHandler(QObject *parent = 0);
+	~ConfigurationHandler();
 
-    static ConfigurationHandler* instance();
+	static ConfigurationHandler *instance();
 
-    void addRepositoryUrl(const QUrl& url);
-    void removeRepositoryUrl(const QUrl& url);
-    QList<QUrl> repositoryUrls() const;
+	void addRepositoryUrl(const QUrl &url);
+	void removeRepositoryUrl(const QUrl &url);
+	QList<QUrl> repositoryUrls() const;
 
-    void setPackageManager(const QString& mngr);
-    QString packageManager() const;
+	void setPackageManager(const QString &mngr);
+	QString packageManager() const;
 
-	void setInstallRoot(const QString& dir);
+	void setInstallRoot(const QString &dir);
 	QString installRoot() const;
 
-	InstalledPackages* installedPackages();
+	InstalledPackages *installedPackages();
 
 private:
-    static ConfigurationHandler* m_instance;
+	static ConfigurationHandler *m_instance;
 
-	InstalledPackages* m_installedPackages;
+	InstalledPackages *m_installedPackages;
 
-    QSettings* m_settings;
+	QSettings *m_settings;
 
-    void setupDefaults();
+	void setupDefaults();
 };

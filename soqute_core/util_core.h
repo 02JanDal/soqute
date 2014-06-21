@@ -1,9 +1,9 @@
 #pragma once
 
-template<typename T> class QList;
+template <typename T> class QList;
 class Package;
 class PackageList;
-typedef const Package* PackagePointer;
+typedef const Package *PackagePointer;
 typedef QList<PackagePointer> PackagePointerList;
 class QStringList;
 class QString;
@@ -26,33 +26,37 @@ QString defaultPackageManager();
 QString currentPlatform();
 
 /**
- * \param developerMode If true alpha, beta and rc versions will be matched higher than a stable version
+ * \param developerMode If true alpha, beta and rc versions will be matched higher than a stable
+ * version
  * \returns true if v1 is higher than v2
  */
-bool isVersionHigherThan(const QString& v1, const QString& v2, const bool developerMode = false);
+bool isVersionHigherThan(const QString &v1, const QString &v2,
+						 const bool developerMode = false);
 
 /**
- * Cleans the list of packages by removing any duplicates and only keeping the highest version of each id/platform combination
+ * Cleans the list of packages by removing any duplicates and only keeping the highest version
+ * of each id/platform combination
  * \returns A cleaned list of packages
  */
-QList<const Package*> cleanPackagePointerList(const QList<const Package*> packages);
+QList<const Package *> cleanPackagePointerList(const QList<const Package *> packages);
 
-QString installerProgramForPackageManager(const QString& manager);
+QString installerProgramForPackageManager(const QString &manager);
 
-bool stringListToPackageList(PackageList* packages, const QStringList &packagesIn, QList<const Package*>& packagesOut, QStringList& alreadyInstalledPackagesOut, QString* notFoundPackage = 0);
+bool stringListToPackageList(PackageList *packages, const QStringList &packagesIn,
+							 QList<const Package *> &packagesOut,
+							 QStringList &alreadyInstalledPackagesOut,
+							 QString *notFoundPackage = 0);
 
-QString installationRoot(const QString& version, const QString& platform);
+QString installationRoot(const QString &version, const QString &platform);
 QDir removalScriptsDirectory();
 
-void ensureExists(const QString& directory);
+void ensureExists(const QString &directory);
 void removeDirectoryRecursive(QDir directory);
-void removeEmptyRecursive(const QDir& dir);
+void removeEmptyRecursive(const QDir &dir);
 
-void mergeDirectoryInto(const QDir& source, const QDir& destination);
-void installArchiveEntry(const KArchiveEntry* entry, const QString& destination);
+void mergeDirectoryInto(const QDir &source, const QDir &destination);
+void installArchiveEntry(const KArchiveEntry *entry, const QString &destination);
 
-template<typename T>
-QList<T> removeDuplicatesFromList(const QList<T>& in);
-PackagePointerList removeDuplicatesFromList(const PackagePointerList& in);
-
+template <typename T> QList<T> removeDuplicatesFromList(const QList<T> &in);
+PackagePointerList removeDuplicatesFromList(const PackagePointerList &in);
 }

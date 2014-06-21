@@ -24,6 +24,5 @@ QMap<QString, QStringList> pluginNames();
 
 QMap<QString, QString> descriptions();
 QMap<QString, QStringList> dependencies();
-QMap<QString, QMap<QString, QStringList> > nativeDependencies();
-
+QMap<QString, QMap<QString, QStringList>> nativeDependencies();
 }

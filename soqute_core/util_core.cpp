@@ -20,12 +20,12 @@ namespace Util
 QString defaultPackageManager()
 {
 #if defined(Q_OS_LINUX)
-    // TODO can we rely on this?
-    QProcess proc;
-    proc.start("lsb_release -si");
-    proc.waitForStarted();
-    proc.waitForFinished();
-    const QString distro = QString::fromLocal8Bit(proc.readAll()).trimmed();
+	// TODO can we rely on this?
+	QProcess proc;
+	proc.start("lsb_release -si");
+	proc.waitForStarted();
+	proc.waitForFinished();
+	const QString distro = QString::fromLocal8Bit(proc.readAll()).trimmed();
 	QMap<QString, QString> m;
 	// source: http://distrowatch.com/dwres.php?resource=package-management
 	m["Ubuntu"] = "apt";
@@ -46,34 +46,36 @@ QString defaultPackageManager()
 	m["Gentoo"] = "emerge";
 	m["Lunar"] = "lin";
 	m["Source Mage"] = "cast";
-    m["FreeBSD"] = "pkg_add";
+	m["FreeBSD"] = "pkg_add";
 	return m[distro];
 #endif
-    // TODO other operating system
-    return QString();
+	// TODO other operating system
+	return QString();
 }
 
 QString currentPlatform()
 {
 #if defined(Q_OS_LINUX)
-# if defined(Q_CC_GNU)
-#  if defined(Q_PROCESSOR_X86_64)
-    return "linux-g++-64";
-#  elif defined(Q_PROCESSOR_X86_32)
-    return "linux-g++-32";
-#  endif
-# endif
+#if defined(Q_CC_GNU)
+#if defined(Q_PROCESSOR_X86_64)
+	return "linux-g++-64";
+#elif defined(Q_PROCESSOR_X86_32)
+	return "linux-g++-32";
 #endif
-    return QString();
+#endif
+#endif
+	return QString();
 }
 
-bool isVersionHigherThan(const QString& v1, const QString& v2, const bool developerMode)
+bool isVersionHigherThan(const QString &v1, const QString &v2, const bool developerMode)
 {
 	QMap<QString, int> titles;
 	titles["alpha"] = 0;
 	titles["beta"] = 1;
 	titles["rc"] = 2;
-	QRegularExpression exp("((?<first>\\d)*(\\.(?<second>\\d*))?(\\.(?<third>\\d*))?(\\.(?<fourth>\\d*))?)((?<title>[a-z]+)(?<titlenum>\\d*))?");
+	QRegularExpression exp(
+		"((?<first>\\d)*(\\.(?<second>\\d*))?(\\.(?<third>\\d*))?(\\.(?<fourth>\\d*))?)((?<"
+		"title>[a-z]+)(?<titlenum>\\d*))?");
 	QRegularExpressionMatch match1 = exp.match(v1);
 	QRegularExpressionMatch match2 = exp.match(v2);
 	const int first1 = match1.captured("first").toInt();
@@ -114,7 +116,8 @@ QList<const Package *> cleanPackagePointerList(const QList<const Package *> pack
 
 	for (PackagePointer package : packages) {
 		const QString identifier = QString("%1#%2").arg(package->id(), package->platform());
-		if (!out.contains(identifier) || isVersionHigherThan(package->version(), out[identifier]->version())) {
+		if (!out.contains(identifier) ||
+			isVersionHigherThan(package->version(), out[identifier]->version())) {
 			out.insert(identifier, package);
 		}
 	}
@@ -148,7 +151,9 @@ QString installerProgramForPackageManager(const QString &manager)
 	// TODO other package managers
 }
 
-bool stringListToPackageList(PackageList *packages, const QStringList& packagesIn, QList<const Package *> &packagesOut, QStringList &alreadyInstalledPackagesOut, QString *notFoundPackage)
+bool stringListToPackageList(PackageList *packages, const QStringList &packagesIn,
+							 QList<const Package *> &packagesOut,
+							 QStringList &alreadyInstalledPackagesOut, QString *notFoundPackage)
 {
 	PackageMatcher matcher(packages);
 	packagesOut.clear();
@@ -163,10 +168,10 @@ bool stringListToPackageList(PackageList *packages, const QStringList& packagesI
 
 	QRegularExpressionMatch match;
 
-	InstalledPackages* installed = ConfigurationHandler::instance()->installedPackages();
+	InstalledPackages *installed = ConfigurationHandler::instance()->installedPackages();
 
-	for (const QString& arg : packagesIn) {
-        match = exp.match(arg);
+	for (const QString &arg : packagesIn) {
+		match = exp.match(arg);
 		if (!match.hasMatch()) {
 			if (notFoundPackage != 0) {
 				*notFoundPackage = arg;
@@ -174,7 +179,7 @@ bool stringListToPackageList(PackageList *packages, const QStringList& packagesI
 			return false;
 		}
 		const QString id = match.captured(1);
-        const QString version = match.captured(2).remove(0, 1);
+		const QString version = match.captured(2).remove(0, 1);
 		const QString platform = match.captured(3).remove(0, 1);
 		if (installed->isPackageInstalled(id, version, platform)) {
 			alreadyInstalledPackagesOut.append(arg);
@@ -187,14 +192,14 @@ bool stringListToPackageList(PackageList *packages, const QStringList& packagesI
 
 QString installationRoot(const QString &version, const QString &platform)
 {
-    QDir dir(ConfigurationHandler::instance()->installRoot());
-    return dir.absoluteFilePath(platform + "/" + version);
+	QDir dir(ConfigurationHandler::instance()->installRoot());
+	return dir.absoluteFilePath(platform + "/" + version);
 }
 QDir removalScriptsDirectory()
 {
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
-    dir.cd("removalScripts");
-    return dir;
+	QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+	dir.cd("removalScripts");
+	return dir;
 }
 
 void ensureExists(const QString &directory)
@@ -206,88 +211,89 @@ void ensureExists(const QString &directory)
 }
 void removeDirectoryRecursive(QDir directory)
 {
-	for (const QString& entry : directory.entryList(QDir::Files)) {
-        directory.remove(entry);
-    }
-	for (const QString& entry : directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-        removeDirectoryRecursive(QDir(directory.absoluteFilePath(entry)));
-    }
-    QDir().rmdir(directory.absolutePath());
+	for (const QString &entry : directory.entryList(QDir::Files)) {
+		directory.remove(entry);
+	}
+	for (const QString &entry : directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+		removeDirectoryRecursive(QDir(directory.absoluteFilePath(entry)));
+	}
+	QDir().rmdir(directory.absolutePath());
 }
 void removeEmptyRecursive(const QDir &dir)
 {
-	for (const QString& child : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-        removeEmptyRecursive(QDir(dir.absoluteFilePath(child)));
-    }
-    if (dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files).isEmpty()) {
-        QDir().rmdir(dir.absolutePath());
-    }
+	for (const QString &child : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+		removeEmptyRecursive(QDir(dir.absoluteFilePath(child)));
+	}
+	if (dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files).isEmpty()) {
+		QDir().rmdir(dir.absolutePath());
+	}
 }
 
 void installArchiveEntry(const KArchiveEntry *entry, const QString &destination)
 {
-    QDir temp = QDir::temp();
-    Util::ensureExists(temp.absoluteFilePath("soqute"));
-    temp.cd("soqute");
-    Util::ensureExists(temp.absoluteFilePath("tmp"));
-    temp.cd("tmp");
+	QDir temp = QDir::temp();
+	Util::ensureExists(temp.absoluteFilePath("soqute"));
+	temp.cd("soqute");
+	Util::ensureExists(temp.absoluteFilePath("tmp"));
+	temp.cd("tmp");
 
-    if (entry->isDirectory()) {
-        const KArchiveDirectory* directory = static_cast<const KArchiveDirectory*>(entry);
-        directory->copyTo(temp.absoluteFilePath(directory->name()));
-        if (QDir().exists(destination)) {
-            QDir().rmdir(destination);
-        }
-        temp.cd(directory->name());
-        mergeDirectoryInto(temp, QDir(destination));
-        temp.removeRecursively();
-    } else {
-        const KArchiveFile* file = static_cast<const KArchiveFile*>(entry);
-        file->copyTo(temp.absoluteFilePath(file->name()));
-        if (QDir().exists(destination)) {
-            QDir().remove(destination);
-        }
-        QFile::copy(temp.absoluteFilePath(file->name()), destination);
-        temp.remove(file->name());
-    }
+	if (entry->isDirectory()) {
+		const KArchiveDirectory *directory = static_cast<const KArchiveDirectory *>(entry);
+		directory->copyTo(temp.absoluteFilePath(directory->name()));
+		if (QDir().exists(destination)) {
+			QDir().rmdir(destination);
+		}
+		temp.cd(directory->name());
+		mergeDirectoryInto(temp, QDir(destination));
+		temp.removeRecursively();
+	} else {
+		const KArchiveFile *file = static_cast<const KArchiveFile *>(entry);
+		file->copyTo(temp.absoluteFilePath(file->name()));
+		if (QDir().exists(destination)) {
+			QDir().remove(destination);
+		}
+		QFile::copy(temp.absoluteFilePath(file->name()), destination);
+		temp.remove(file->name());
+	}
 }
 void mergeDirectoryInto(const QDir &source, const QDir &destination)
 {
-    // ensure the directory itself exists
-    if (!destination.exists()) {
-        QDir().mkdir(destination.absolutePath());
-    }
-    // and then move all the contents
-	for (const QFileInfo& entry : source.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
-        if (entry.isFile()) {
-            QFile::copy(entry.absoluteFilePath(), destination.absoluteFilePath(entry.fileName()));
-        } else {
-            mergeDirectoryInto(QDir(entry.absoluteFilePath()), destination.absoluteFilePath(entry.fileName()));
-        }
-    }
+	// ensure the directory itself exists
+	if (!destination.exists()) {
+		QDir().mkdir(destination.absolutePath());
+	}
+	// and then move all the contents
+	for (const QFileInfo &entry :
+		 source.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+		if (entry.isFile()) {
+			QFile::copy(entry.absoluteFilePath(),
+						destination.absoluteFilePath(entry.fileName()));
+		} else {
+			mergeDirectoryInto(QDir(entry.absoluteFilePath()),
+							   destination.absoluteFilePath(entry.fileName()));
+		}
+	}
 }
 
-template<typename T>
-QList<T> removeDuplicatesFromList(const QList<T> &in)
+template <typename T> QList<T> removeDuplicatesFromList(const QList<T> &in)
 {
-    QList<T> out;
-	for (const T& t : in) {
-        if (!out.contains(t)) {
-            out.append(t);
-        }
-    }
-    return out;
+	QList<T> out;
+	for (const T &t : in) {
+		if (!out.contains(t)) {
+			out.append(t);
+		}
+	}
+	return out;
 }
 
-PackagePointerList removeDuplicatesFromList(const PackagePointerList& in)
+PackagePointerList removeDuplicatesFromList(const PackagePointerList &in)
 {
-    PackagePointerList out;
+	PackagePointerList out;
 	for (PackagePointer package : in) {
-        if (!out.contains(package)) {
-            out.append(package);
-        }
-    }
-    return out;
+		if (!out.contains(package)) {
+			out.append(package);
+		}
+	}
+	return out;
 }
-
 }

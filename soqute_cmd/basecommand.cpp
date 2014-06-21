@@ -6,24 +6,24 @@
 #include "configurationhandler.h"
 #include "util_cmd.h"
 
-BaseCommand::BaseCommand(ConfigurationHandler *configHandler, PackageList *packages, QObject *parent) :
-	QObject(parent), configHandler(configHandler), packages(packages)
+BaseCommand::BaseCommand(ConfigurationHandler *configHandler, PackageList *packages,
+						 QObject *parent)
+	: QObject(parent), configHandler(configHandler), packages(packages)
 {
-    parser = new QCommandLineParser();
+	parser = new QCommandLineParser();
 }
 
 void BaseCommand::showHelp()
 {
-    setupParser();
-    parser->showHelp();
+	setupParser();
+	parser->showHelp();
 }
 
 bool BaseCommand::execute(const QStringList &args)
 {
-    setupParser();
+	setupParser();
 	parser->parse(args);
-    Util::handleCommonArguments(parser);
+	Util::handleCommonArguments(parser);
 
 	return executeImplementation();
 }
-

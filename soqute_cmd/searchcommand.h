@@ -4,11 +4,12 @@
 
 class SearchCommand : public BaseCommand
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-	explicit SearchCommand(ConfigurationHandler* configHandler, PackageList* packages, QObject *parent = 0);
+	explicit SearchCommand(ConfigurationHandler *configHandler, PackageList *packages,
+						   QObject *parent = 0);
 
 protected:
-    virtual void setupParser() override;
+	virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };

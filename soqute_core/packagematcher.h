@@ -10,11 +10,13 @@ class Package;
 class SOQUTE_CORESHARED_EXPORT PackageMatcher
 {
 public:
-    PackageMatcher(PackageList *packages);
+	PackageMatcher(PackageList *packages);
 
-    QList<const Package*> matchPackages(const QString& name, const QString& version, const QString& platform) const;
-    const Package* matchSinglePackage(const QString& name, const QString& version, const QString& platform) const;
+	QList<const Package *> matchPackages(const QString &name, const QString &version,
+										 const QString &platform) const;
+	const Package *matchSinglePackage(const QString &name, const QString &version,
+									  const QString &platform) const;
 
 private:
-    PackageList* m_packages;
+	PackageList *m_packages;
 };

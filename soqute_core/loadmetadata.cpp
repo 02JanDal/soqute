@@ -6,13 +6,14 @@
 
 #include "package.h"
 
-LoadMetadata::LoadMetadata(PackageList* packages, QObject *parent) :
-	QObject(parent), m_packages(packages)
+LoadMetadata::LoadMetadata(PackageList *packages, QObject *parent)
+	: QObject(parent), m_packages(packages)
 {
-    m_manager = new QNetworkAccessManager(this);
-    connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(networkFinished(QNetworkReply*)));
+	m_manager = new QNetworkAccessManager(this);
+	connect(m_manager, SIGNAL(finished(QNetworkReply *)), this,
+			SLOT(networkFinished(QNetworkReply *)));
 
-	connect(m_packages, SIGNAL(parseError(QString,int)), this, SLOT(parseError(QString,int)));
+	connect(m_packages, SIGNAL(parseError(QString, int)), this, SLOT(parseError(QString, int)));
 }
 
 void LoadMetadata::setRepositoryList(const QList<QUrl> &urls)
@@ -28,7 +29,8 @@ QString LoadMetadata::messageToString(const LoadMetadata::Message msg, const QVa
 	}
 	case NetworkError: {
 		QMap<QString, QVariant> d = data.toMap();
-		return tr("Network error receiving %1: %2").arg(d["url"].toString(), d["errorString"].toString());
+		return tr("Network error receiving %1: %2")
+			.arg(d["url"].toString(), d["errorString"].toString());
 	}
 	case ParserError: {
 		QMap<QString, QVariant> d = data.toMap();
@@ -42,13 +44,14 @@ QString LoadMetadata::messageToString(const LoadMetadata::Message msg, const QVa
 void LoadMetadata::downloadMetadata()
 {
 	addMessage(FetchingPackages);
-    m_numRequests = m_urls.size();
-	for (const QUrl& url : m_urls) {
-        QNetworkRequest request(url);
-        QNetworkReply* reply = m_manager->get(request);
-        connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(progress(qint64,qint64)));
-        connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(error()));
-    }
+	m_numRequests = m_urls.size();
+	for (const QUrl &url : m_urls) {
+		QNetworkRequest request(url);
+		QNetworkReply *reply = m_manager->get(request);
+		connect(reply, SIGNAL(downloadProgress(qint64, qint64)), this,
+				SLOT(progress(qint64, qint64)));
+		connect(reply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(error()));
+	}
 }
 
 void LoadMetadata::networkFinished(QNetworkReply *reply)
@@ -59,26 +62,26 @@ void LoadMetadata::networkFinished(QNetworkReply *reply)
 		data["error"] = reply->error();
 		data["errorString"] = reply->errorString();
 		addMessage(NetworkError, data);
-    }
+	}
 
-    if (m_packages->parse(reply->readAll())) {
-        m_numRequests--;
+	if (m_packages->parse(reply->readAll())) {
+		m_numRequests--;
 		if (m_numRequests == 0) {
 			finish(true);
-        }
-    }
+		}
+	}
 }
 
 void LoadMetadata::progress(qint64 received, qint64 total)
 {
-    Q_UNUSED(received);
-    Q_UNUSED(total);
-    // TODO output progress
+	Q_UNUSED(received);
+	Q_UNUSED(total);
+	// TODO output progress
 }
 
 void LoadMetadata::error()
 {
-	QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+	QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 	QMap<QString, QVariant> data;
 	data["url"] = reply->url();
 	data["error"] = reply->error();

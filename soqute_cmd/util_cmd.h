@@ -4,6 +4,6 @@ class QCommandLineParser;
 
 namespace Util
 {
-void handleCommonArguments(QCommandLineParser* parser);
+void handleCommonArguments(QCommandLineParser *parser);
 bool confirm();
 }

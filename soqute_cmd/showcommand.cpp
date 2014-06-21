@@ -14,20 +14,24 @@
 #include "installedpackages.h"
 #include "textstream.h"
 
-ShowCommand::ShowCommand(ConfigurationHandler *configHandler, PackageList* packages, QObject *parent) :
-	BaseCommand(configHandler, packages, parent)
+ShowCommand::ShowCommand(ConfigurationHandler *configHandler, PackageList *packages,
+						 QObject *parent)
+	: BaseCommand(configHandler, packages, parent)
 {
 }
 
 void ShowCommand::setupParser()
 {
-    parser = new QCommandLineParser();
+	parser = new QCommandLineParser();
 	parser->setApplicationDescription(tr("Shows information about a package"));
-    parser->addVersionOption();
+	parser->addVersionOption();
 	parser->addHelpOption();
-	parser->addPositionalArgument(tr("package identifer"), tr("The identifier of the package"), tr("<package-name>[/<version>][#<platform>]"));
-    parser->addOption(QCommandLineOption(QStringList() << "nativeDependencies", tr("Only outputs the native packages for piping to the package manager"),
-                                         tr("package-manager"), configHandler->packageManager()));
+	parser->addPositionalArgument(tr("package identifer"), tr("The identifier of the package"),
+								  tr("<package-name>[/<version>][#<platform>]"));
+	parser->addOption(QCommandLineOption(
+		QStringList() << "nativeDependencies",
+		tr("Only outputs the native packages for piping to the package manager"),
+		tr("package-manager"), configHandler->packageManager()));
 }
 
 bool ShowCommand::executeImplementation()
@@ -35,11 +39,11 @@ bool ShowCommand::executeImplementation()
 	if (parser->positionalArguments().isEmpty()) {
 		out << "You need to specify a package\n" << flush;
 		return false;
-    }
+	}
 
 	// captures expressions like this: <name>[/<version>][#<platform>]
 	// examples: qtbase/5.0.0#win32-g++
-    //           qtjsbackend
+	//           qtjsbackend
 	//           qtpim#linux-g++-32
 	//           qtquick1/5.1.0
 	QRegularExpression exp("([a-z0-9\\-_\\+]*)(/[a-z0-9\\-\\+\\.]*)?(#[a-z0-9\\-\\+]*)?");
@@ -48,7 +52,7 @@ bool ShowCommand::executeImplementation()
 	const QString version = match.captured(2).remove(0, 1);
 	const QString platform = match.captured(3).remove(0, 1);
 
-	const Package* package = packages->package(id, version, platform);
+	const Package *package = packages->package(id, version, platform);
 
 	if (package == 0) {
 		out << "No such package found\n" << flush;
@@ -57,7 +61,7 @@ bool ShowCommand::executeImplementation()
 
 	if (!parser->isSet("nativeDependencies")) {
 		// populate the other versions/platforms lists
-		const QList<const Package*> others = packages->otherPackages(package);
+		const QList<const Package *> others = packages->otherPackages(package);
 		QStringList allPlatforms;
 		QStringList allVersions;
 		for (PackagePointer pkg : others) {
@@ -71,9 +75,10 @@ bool ShowCommand::executeImplementation()
 
 		// just output everything
 		out << "Status:              "
-			<< (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(package->id(), package->version(), package->platform())
-			   ? "Installed" : "Not installed")
-				 << "\n" << flush;
+			<< (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(
+					package->id(), package->version(), package->platform())
+					? "Installed"
+					: "Not installed") << "\n" << flush;
 		out << "ID:                  " << package->id() << "\n"
 			<< "Description:         " << package->description() << "\n"
 			<< "Version:             " << package->version() << "\n"
@@ -88,20 +93,20 @@ bool ShowCommand::executeImplementation()
 			<< "Native dependencies: \n" << flush;
 		QMap<QString, QStringList> nDeps;
 		for (const PackagePointer p : package->recursiveDependencies()) {
-			for (const QString& mngr : p->nativeDependencies().keys()) {
+			for (const QString &mngr : p->nativeDependencies().keys()) {
 				nDeps[mngr].append(p->nativeDependencies()[mngr]);
-                nDeps[mngr].removeDuplicates();
+				nDeps[mngr].removeDuplicates();
 			}
 		}
 
-		for (const QString& mngr : nDeps.keys()) {
+		for (const QString &mngr : nDeps.keys()) {
 			out << "    " << mngr << ": " << nDeps[mngr].join(", ") << "\n" << flush;
 		}
 	} else {
 		// only output packages
 		QMap<QString, QStringList> nDeps;
 		for (const PackagePointer p : package->recursiveDependencies()) {
-			for (const QString& mngr : p->nativeDependencies().keys()) {
+			for (const QString &mngr : p->nativeDependencies().keys()) {
 				nDeps[mngr].append(p->nativeDependencies()[mngr]);
 			}
 		}

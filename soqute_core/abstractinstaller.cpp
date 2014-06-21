@@ -1,7 +1,6 @@
 #include "abstractinstaller.h"
 
-AbstractInstaller::AbstractInstaller(QObject *parent) :
-	QThread(parent)
+AbstractInstaller::AbstractInstaller(QObject *parent) : QThread(parent)
 {
 }
 

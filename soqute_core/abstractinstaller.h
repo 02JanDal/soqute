@@ -12,15 +12,18 @@ public:
 
 	virtual void run() override;
 
-public slots:
-	virtual void install(const Package* package, const QString& fileName, QString* errorString = 0) = 0;
-	virtual void remove(const Package* package, const QString& fileName, QString* errorString = 0) = 0;
+public
+slots:
+	virtual void install(const Package *package, const QString &fileName,
+						 QString *errorString = 0) = 0;
+	virtual void remove(const Package *package, const QString &fileName,
+						QString *errorString = 0) = 0;
 
 signals:
-	void installPackageBegin(const Package* package);
-	void installPackageEnd(const Package* package);
-	void removePackageBegin(const Package* package);
-	void removePackageEnd(const Package* package);
-	void message(const QString& msg);
-	void error(const QString& msg);
+	void installPackageBegin(const Package *package);
+	void installPackageEnd(const Package *package);
+	void removePackageBegin(const Package *package);
+	void removePackageEnd(const Package *package);
+	void message(const QString &msg);
+	void error(const QString &msg);
 };

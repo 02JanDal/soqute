@@ -4,13 +4,17 @@
 
 class ConfigCommand : public BaseCommand
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-	ConfigCommand(ConfigurationHandler* configHandler, PackageList* packages, QObject* parent = 0);
+	ConfigCommand(ConfigurationHandler *configHandler, PackageList *packages,
+				  QObject *parent = 0);
 
-    bool needMetadata() const override { return false; }
+	bool needMetadata() const override
+	{
+		return false;
+	}
 
 protected:
-    virtual void setupParser() override;
+	virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };

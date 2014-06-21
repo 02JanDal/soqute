@@ -4,11 +4,12 @@
 
 class InstallCommand : public BaseCommand
 {
-    Q_OBJECT
+	Q_OBJECT
 public:
-	explicit InstallCommand(ConfigurationHandler* configHandler, PackageList* packages, QObject *parent = 0);
+	explicit InstallCommand(ConfigurationHandler *configHandler, PackageList *packages,
+							QObject *parent = 0);
 
 protected:
-    virtual void setupParser() override;
+	virtual void setupParser() override;
 	virtual bool executeImplementation() override;
 };
