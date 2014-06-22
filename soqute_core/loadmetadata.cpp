@@ -18,7 +18,7 @@
 #include "cache.h"
 
 LoadMetadata::LoadMetadata(PackageList *packages, QObject *parent)
-	: QObject(parent), m_packages(packages), m_manager(new QNetworkAccessManager(this)),
+	: Actor(parent), m_packages(packages), m_manager(new QNetworkAccessManager(this)),
 	  m_cache(new Cache(
 		  QDir(QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/metadata")))
 {
@@ -30,7 +30,7 @@ void LoadMetadata::setRepositoryList(const QList<QUrl> &urls)
 	m_urls = urls;
 }
 
-QString LoadMetadata::messageToString(const LoadMetadata::Message msg, const QVariant &data)
+QString LoadMetadata::messageToStringImpl(const int msg, const QVariant &data) const
 {
 	switch (msg) {
 	case FetchingPackages: {
@@ -52,21 +52,10 @@ QString LoadMetadata::messageToString(const LoadMetadata::Message msg, const QVa
 		return QString();
 	}
 }
-void LoadMetadata::addMessage(const LoadMetadata::Message msg, const QVariant &data)
-{
-	m_messages.enqueue(qMakePair(msg, data));
-	emit message(msg, data);
-}
-void LoadMetadata::finish()
-{
-	m_isDone = true;
-	emit done(m_isSuccess);
-}
 
 void LoadMetadata::loadMetadata(bool refreshAll)
 {
-	m_isDone = false;
-	m_isSuccess = true;
+	reset();
 	m_numRequests = 0;
 	try
 	{
@@ -95,14 +84,12 @@ void LoadMetadata::loadMetadata(bool refreshAll)
 			catch (Exception &e)
 			{
 				addMessage(OtherError, e.message());
-				m_isSuccess = false;
 			}
 		}
 	}
 	catch (Exception &e)
 	{
 		addMessage(OtherError, e.message());
-		m_isSuccess = false;
 	}
 
 	if (m_numRequests == 0) {
@@ -122,7 +109,6 @@ void LoadMetadata::networkFinished()
 		catch (Exception &e)
 		{
 			addMessage(OtherError, e.message());
-			m_isSuccess = false;
 		}
 	}
 
@@ -145,7 +131,6 @@ void LoadMetadata::networkError()
 	data["error"] = reply->error();
 	data["errorString"] = reply->errorString();
 	addMessage(NetworkError, data);
-	m_isSuccess = false;
 }
 
 void LoadMetadata::parseError(const QString &errorString, const int offset)
@@ -154,5 +139,4 @@ void LoadMetadata::parseError(const QString &errorString, const int offset)
 	data["errorString"] = errorString;
 	data["offset"] = offset;
 	addMessage(ParserError, data);
-	m_isSuccess = false;
 }

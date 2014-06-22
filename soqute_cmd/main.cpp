@@ -122,8 +122,7 @@ int main(int argc, char *argv[])
 		auto checkAndOutputMessages = [&metadataLoader]()
 		{
 			while (metadataLoader->hasMessage()) {
-				QPair<LoadMetadata::Message, QVariant> msg = metadataLoader->takeLastMessage();
-				out << LoadMetadata::messageToString(msg.first, msg.second) << endl << flush;
+				out << metadataLoader->messageToString(metadataLoader->takeLastMessage()) << endl << flush;
 			}
 		};
 

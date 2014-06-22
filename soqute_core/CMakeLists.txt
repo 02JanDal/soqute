@@ -30,6 +30,8 @@ set(SRCS
     cache.h
     cache.cpp
     exception.h
+    actor.h
+    actor.cpp
 )
 
 include_directories(${KARCHIVE_INCLUDE_DIR})

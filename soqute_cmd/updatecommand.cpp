@@ -21,8 +21,7 @@ bool UpdateCommand::executeImplementation()
 	auto checkAndOutputMessages = [this]()
 	{
 		while (m_metadataLoader->hasMessage()) {
-			QPair<LoadMetadata::Message, QVariant> msg = m_metadataLoader->takeLastMessage();
-			out << LoadMetadata::messageToString(msg) << endl << flush;
+			out << m_metadataLoader->messageToString(m_metadataLoader->takeLastMessage()) << endl << flush;
 		}
 	};
 

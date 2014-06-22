@@ -154,7 +154,6 @@ bool RemoveCommand::executeImplementation()
 			}
 		}
 		while (remover.hasMessage()) {
-			QPair<Remover::Message, QVariant> msg = remover.takeLastMessage();
 			out << remover.messageToString(remover.takeLastMessage()) << endl;
 		}
 	}

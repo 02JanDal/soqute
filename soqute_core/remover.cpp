@@ -9,7 +9,7 @@
 #include "package.h"
 #include "filesystem.h"
 
-Remover::Remover(QObject *parent) : QObject(parent), m_remover(new JSInstaller(this))
+Remover::Remover(QObject *parent) : Actor(parent), m_remover(new JSInstaller(this))
 {
 	connect(m_remover, SIGNAL(error(QString)), this, SLOT(errorRemoving(QString)));
 	connect(m_remover, SIGNAL(removePackageBegin(const Package *)), this,
@@ -21,7 +21,7 @@ Remover::Remover(QObject *parent) : QObject(parent), m_remover(new JSInstaller(t
 			SLOT(remove(const Package *, QString)), Qt::QueuedConnection);
 }
 
-QString Remover::messageToString(const Remover::Message msg, const QVariant &data)
+QString Remover::messageToStringImpl(const int msg, const QVariant &data) const
 {
 	switch (msg) {
 	case Removing: {
@@ -45,6 +45,9 @@ QString Remover::messageToString(const Remover::Message msg, const QVariant &dat
 
 void Remover::remove(const QList<const Package *> &toRemove)
 {
+	// reset
+	setIsSuccess(true);
+
 	m_packagesToRemove = toRemove;
 	removeNextPackage();
 }
@@ -65,14 +68,13 @@ void Remover::removePackageEnd(const Package *package)
 		finalCleanup();
 		m_remover->quit();
 		m_remover->wait();
-		finish(true);
+		finish();
 	}
 }
 
 void Remover::errorRemoving(const QString &msg)
 {
 	addMessage(RemoveError, msg);
-	finish(false);
 }
 
 void Remover::finalCleanup()
@@ -85,16 +87,8 @@ void Remover::finalCleanup()
 		catch (Exception &e)
 		{
 			addMessage(OtherError, e.message());
-			finish(false);
 		}
 	}
-}
-
-void Remover::finish(bool success)
-{
-	m_isDone = true;
-	m_isSuccess = success;
-	emit done(m_isSuccess);
 }
 
 void Remover::removeNextPackage()
@@ -103,10 +97,4 @@ void Remover::removeNextPackage()
 	emit removePackage(package, Util::removalScriptsDirectory().absoluteFilePath(QString(
 									"%1-%2-%3-remove.js").arg(package->id(), package->version(),
 															  package->platform())));
-}
-
-void Remover::addMessage(const Remover::Message msg, const QVariant &data)
-{
-	m_messages.enqueue(qMakePair(msg, data));
-	emit message(msg, data);
 }

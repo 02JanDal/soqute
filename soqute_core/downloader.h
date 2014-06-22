@@ -1,11 +1,9 @@
 #pragma once
 
-#include <QObject>
+#include "actor.h"
 
-#include <QQueue>
 #include <QUrl>
 #include <QDir>
-#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 class QNetworkAccessManager;
@@ -27,7 +25,7 @@ public:
 	virtual bool authenticate(QNetworkReply *reply, QAuthenticator *authenticator) = 0;
 };
 
-class Downloader : public QObject
+class Downloader : public Actor
 {
 	Q_OBJECT
 public:
@@ -36,44 +34,22 @@ public:
 
 	void setAuthenticator(AbstractAuthenticator *authenticator);
 
-	enum Message {
+	enum MessageType {
 		None,
 		NothingToDo,
 		FetchingPackages,
 		ReceivedArchive,
-		ArchiveSaveError,
 		NetworkDone,
-		NetworkError,
 		Installing,
 		Installed,
+		ArchiveSaveError = messageTypeErrorOffset,
+		NetworkError,
 		InstallError,
 		SslError,
 		AuthError
 	};
-	static QString messageToString(const Message msg, const QVariant &data);
-	static QString messageToString(const QPair<Message, QVariant> &msg)
-	{
-		return messageToString(msg.first, msg.second);
-	}
-	bool hasMessage() const
-	{
-		return !m_messages.isEmpty();
-	}
-	QPair<Message, QVariant> takeLastMessage()
-	{
-		return m_messages.dequeue();
-	}
 
 	void downloadAndInstall();
-
-	bool isDone() const
-	{
-		return m_isDone;
-	}
-	bool isSuccess() const
-	{
-		return m_isSuccess;
-	}
 
 private:
 	QNetworkAccessManager *m_manager;
@@ -81,9 +57,6 @@ private:
 	PackageList *m_packages;
 	PackagePointerList m_packagesToDownload;
 	AbstractAuthenticator *m_authenticator;
-	QQueue<QPair<Message, QVariant>> m_messages;
-	bool m_isDone;
-	bool m_isSuccess;
 
 	QMap<PackagePointer, QString> m_packagesToInstall;
 	QList<QNetworkReply *> m_unarrivedReplies;
@@ -95,15 +68,13 @@ private:
 	bool saveToFile(const QByteArray &data, const QString &fileName, QString *errorString = 0);
 	void abortNetworkRequests();
 
-	void addMessage(const Message msg, const QVariant &data = QVariant());
+	QString messageToStringImpl(const int msg, const QVariant &data) const override;
 
 private
 slots:
 	void networkDone(QNetworkReply *reply);
 	void authenticationNeeded(QNetworkReply *reply, QAuthenticator *authenticator);
 	void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
-
-	void finish(bool success = true);
 
 	// for the AbstractInstaller
 	void installPackageBegin(const Package *package);
@@ -112,6 +83,4 @@ slots:
 
 signals:
 	void installPackage(const Package *package, const QString &fileName);
-	void message(const Message msg, const QVariant &data);
-	void done(const bool success);
 };

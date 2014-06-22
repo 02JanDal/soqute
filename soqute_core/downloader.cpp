@@ -19,8 +19,8 @@ Q_DECLARE_METATYPE(QSslError)
 
 Downloader::Downloader(PackageList *packages, PackagePointerList packagesToInstall,
 					   QObject *parent)
-	: QObject(parent), m_packages(packages), m_packagesToDownload(packagesToInstall),
-	  m_authenticator(0), m_isDone(false), m_isSuccess(false)
+	: Actor(parent), m_packages(packages), m_packagesToDownload(packagesToInstall),
+	  m_authenticator(0)
 {
 	m_manager = new QNetworkAccessManager(this);
 	connect(m_manager, SIGNAL(finished(QNetworkReply *)), this,
@@ -54,7 +54,7 @@ void Downloader::setAuthenticator(AbstractAuthenticator *authenticator)
 	m_authenticator = authenticator;
 }
 
-QString Downloader::messageToString(const Downloader::Message msg, const QVariant &data)
+QString Downloader::messageToStringImpl(const int msg, const QVariant &data) const
 {
 	switch (msg) {
 	case None: {
@@ -103,6 +103,9 @@ QString Downloader::messageToString(const Downloader::Message msg, const QVarian
 
 void Downloader::downloadAndInstall()
 {
+	// reset
+	setIsSuccess(true);
+
 	for (PackagePointer package : m_packagesToDownload) {
 		if (package->url().isEmpty()) {
 			m_packagesToDownload.removeAll(package);
@@ -132,8 +135,8 @@ void Downloader::cleanup()
 
 void Downloader::networkDone(QNetworkReply *reply)
 {
+	m_unarrivedReplies.removeAll(reply);
 	if (reply->error() == QNetworkReply::NoError) {
-		m_unarrivedReplies.removeAll(reply);
 		PackagePointer package = reply->property("package").value<PackagePointer>();
 		addMessage(ReceivedArchive, QVariant::fromValue(package));
 		const QString path = reply->url().path(QUrl::FullyEncoded);
@@ -144,14 +147,8 @@ void Downloader::networkDone(QNetworkReply *reply)
 		if (!res) {
 			addMessage(ArchiveSaveError, errorString);
 			abortNetworkRequests();
-			finish(false);
-			return;
-		}
-		m_packagesToInstall.insert(package, fileName);
-
-		if (m_unarrivedReplies.isEmpty()) {
-			addMessage(NetworkDone);
-			installNextPackage();
+		} else {
+			m_packagesToInstall.insert(package, fileName);
 		}
 	} else {
 		QMap<QString, QVariant> data;
@@ -159,8 +156,15 @@ void Downloader::networkDone(QNetworkReply *reply)
 		data["error"] = reply->error();
 		data["errorString"] = reply->errorString();
 		addMessage(NetworkError, data);
-		finish(false);
-		return;
+	}
+
+	if (m_unarrivedReplies.isEmpty()) {
+		if (isSuccess()) {
+			addMessage(NetworkDone);
+			installNextPackage();
+		} else {
+			finish();
+		}
 	}
 }
 void Downloader::authenticationNeeded(QNetworkReply *reply, QAuthenticator *authenticator)
@@ -177,7 +181,6 @@ void Downloader::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 	data["url"] = reply->url();
 	data["errors"] = QVariant::fromValue(errors);
 	addMessage(SslError, data);
-	finish(false);
 }
 
 void Downloader::installPackageBegin(const Package *package)
@@ -194,14 +197,13 @@ void Downloader::installPackageEnd(const Package *package)
 	} else {
 		m_installer->quit();
 		m_installer->wait();
-		finish(true);
+		finish();
 	}
 }
 
 void Downloader::errorInstalling(const QString &msg)
 {
 	addMessage(InstallError, msg);
-	finish(false);
 }
 
 bool Downloader::saveToFile(const QByteArray &data, const QString &fileName,
@@ -225,19 +227,6 @@ void Downloader::abortNetworkRequests()
 		reply->abort();
 		reply->deleteLater();
 	}
-}
-
-void Downloader::addMessage(const Downloader::Message msg, const QVariant &data)
-{
-	m_messages.enqueue(qMakePair(msg, data));
-	emit message(msg, data);
-}
-
-void Downloader::finish(bool success)
-{
-	m_isDone = true;
-	m_isSuccess = success;
-	emit done(m_isSuccess);
 }
 
 void Downloader::installNextPackage()
