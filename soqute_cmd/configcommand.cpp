@@ -40,6 +40,7 @@ struct Setting
 	}
 	virtual bool set(const QString &, ConfigurationHandler *)
 	{
+		return false;
 	}
 };
 struct RepositoriesSetting : public Setting
@@ -80,6 +81,7 @@ struct PackageManagerSetting : public Setting
 	bool set(const QString &value, ConfigurationHandler *handler) override
 	{
 		handler->setPackageManager(value);
+		return true;
 	}
 };
 struct InstallPrefixSetting : public Setting
@@ -95,6 +97,7 @@ struct InstallPrefixSetting : public Setting
 	bool set(const QString &value, ConfigurationHandler *handler) override
 	{
 		handler->setInstallRoot(value);
+		return true;
 	}
 };
 struct AllowBuildSystemInstallSetting : public Setting

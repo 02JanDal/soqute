@@ -39,7 +39,7 @@ QJsonValue toJson(const QDateTime &datetime);
 
 template <typename T>
 typename std::enable_if<std::is_same<T, QString>::value, T>::type
-	ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
+	ensureIsType(const QJsonValue &value, const Requirement = Required,
 				 const QString &what = "Value")
 {
 	if (!value.isString()) {
@@ -50,7 +50,7 @@ typename std::enable_if<std::is_same<T, QString>::value, T>::type
 
 template <typename T>
 typename std::enable_if<std::is_same<T, bool>::value, T>::type
-	ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
+	ensureIsType(const QJsonValue &value, const Requirement = Required,
 				 const QString &what = "Value")
 {
 	if (!value.isBool()) {
@@ -61,7 +61,7 @@ typename std::enable_if<std::is_same<T, bool>::value, T>::type
 
 template <typename T>
 typename std::enable_if<std::is_same<T, double>::value, T>::type
-	ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
+	ensureIsType(const QJsonValue &value, const Requirement = Required,
 				 const QString &what = "Value")
 {
 	if (!value.isDouble()) {
