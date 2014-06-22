@@ -198,6 +198,7 @@ QString installationRoot(const QString &version, const QString &platform)
 QDir removalScriptsDirectory()
 {
 	QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+	dir.mkdir("removalScripts");
 	dir.cd("removalScripts");
 	return dir;
 }

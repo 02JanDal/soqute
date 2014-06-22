@@ -77,7 +77,6 @@ void ConfigurationHandler::setInstallRoot(const QString &dir)
 	m_settings->setValue("InstallRoot", dir);
 	m_settings->sync();
 }
-
 QString ConfigurationHandler::installRoot() const
 {
 	return m_settings->value("InstallRoot").toString();

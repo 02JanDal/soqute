@@ -14,6 +14,7 @@ class QNetworkReply;
 QT_END_NAMESPACE
 
 class PackageList;
+class Cache;
 
 class SOQUTE_CORESHARED_EXPORT LoadMetadata : public QObject
 {
@@ -26,7 +27,8 @@ public:
 	enum Message {
 		FetchingPackages,
 		NetworkError,
-		ParserError
+		ParserError,
+		OtherError
 	};
 	static QString messageToString(const Message msg, const QVariant &data);
 	bool hasMessage() const
@@ -38,7 +40,7 @@ public:
 		return m_messages.dequeue();
 	}
 
-	void downloadMetadata();
+	void loadMetadata(bool refreshAll = false);
 
 	bool isDone() const
 	{
@@ -52,6 +54,7 @@ public:
 private:
 	PackageList *m_packages;
 	QNetworkAccessManager *m_manager;
+	Cache *m_cache;
 	QQueue<QPair<Message, QVariant>> m_messages;
 	bool m_isDone;
 	bool m_isSuccess;
@@ -63,13 +66,13 @@ private:
 	int m_numRequests;
 
 	void addMessage(const Message msg, const QVariant &data = QVariant());
-	void finish(bool success = true);
+	void finish();
 
 private
 slots:
-	void networkFinished(QNetworkReply *reply);
-	void progress(qint64 received, qint64 total);
-	void error();
+	void networkFinished();
+	void networkProgress(qint64 received, qint64 total);
+	void networkError();
 	void parseError(const QString &errorString, const int offset);
 
 signals:

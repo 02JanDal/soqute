@@ -23,6 +23,13 @@ set(SRCS
     jsinstaller.cpp
     remover.h
     remover.cpp
+    json.h
+    json.cpp
+    filesystem.h
+    filesystem.cpp
+    cache.h
+    cache.cpp
+    exception.h
 )
 
 include_directories(${KARCHIVE_INCLUDE_DIR})

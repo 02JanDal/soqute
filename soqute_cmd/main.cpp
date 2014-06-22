@@ -110,13 +110,22 @@ int main(int argc, char *argv[])
 
 	// load metadata
 	if (cmd->needMetadata()) {
-		metadataLoader->downloadMetadata();
-		while (!metadataLoader->isDone()) {
-			qApp->processEvents();
-			if (metadataLoader->hasMessage()) {
+		auto checkAndOutputMessages = [&metadataLoader]()
+		{
+			while (metadataLoader->hasMessage()) {
 				QPair<LoadMetadata::Message, QVariant> msg = metadataLoader->takeLastMessage();
 				out << metadataLoader->messageToString(msg.first, msg.second) << "\n" << flush;
 			}
+		};
+
+		metadataLoader->loadMetadata();
+		while (!metadataLoader->isDone()) {
+			qApp->processEvents();
+			checkAndOutputMessages();
+		}
+		checkAndOutputMessages();
+		if (!metadataLoader->isSuccess()) {
+			return 1;
 		}
 	}
 

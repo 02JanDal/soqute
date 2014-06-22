@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QUrl>
+#include <QObject>
+#include <QUrl>
 
 #include "soqute_core_global.h"
 
