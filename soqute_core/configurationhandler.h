@@ -28,6 +28,12 @@ public:
 	void setInstallRoot(const QString &dir);
 	QString installRoot() const;
 
+	void setAllowBuildSystemInstall(const bool allow);
+	bool allowBuildSystemInstall() const;
+
+	void setTemporaryExtraRepository(const QUrl &repo);
+	void setTemporaryInstallRoot(const QString &dir);
+
 	InstalledPackages *installedPackages();
 
 private:
@@ -36,6 +42,9 @@ private:
 	InstalledPackages *m_installedPackages;
 
 	QSettings *m_settings;
+
+	QUrl m_temporaryExtraRepository;
+	QString m_temporaryInstallRoot;
 
 	void setupDefaults();
 };

@@ -2,6 +2,7 @@
 
 #include <QSettings>
 #include <QStandardPaths>
+#include <QDebug>
 
 #include "util_core.h"
 #include "installedpackages.h"
@@ -59,6 +60,9 @@ QList<QUrl> ConfigurationHandler::repositoryUrls() const
 	for (const QVariant &variant : variantList) {
 		urlList.append(variant.toUrl());
 	}
+	if (!m_temporaryExtraRepository.isEmpty() && m_temporaryExtraRepository.isValid()) {
+		urlList.prepend(m_temporaryExtraRepository);
+	}
 	return urlList;
 }
 
@@ -79,7 +83,21 @@ void ConfigurationHandler::setInstallRoot(const QString &dir)
 }
 QString ConfigurationHandler::installRoot() const
 {
-	return m_settings->value("InstallRoot").toString();
+	if (m_temporaryInstallRoot.isNull()) {
+		return m_settings->value("InstallRoot").toString();
+	} else {
+		return m_temporaryInstallRoot;
+	}
+}
+
+void ConfigurationHandler::setAllowBuildSystemInstall(const bool allow)
+{
+	m_settings->setValue("AllowBuildSystemInstall", allow);
+	m_settings->sync();
+}
+bool ConfigurationHandler::allowBuildSystemInstall() const
+{
+	return m_settings->value("AllowBuildSystemInstall").toBool();
 }
 
 InstalledPackages *ConfigurationHandler::installedPackages()
@@ -107,6 +125,18 @@ void ConfigurationHandler::setupDefaults()
 #endif
 			);
 	}
+	if (!m_settings->contains("AllowBuildSystemInstall")) {
+		m_settings->setValue("AllowBuildSystemInstall", false);
+	}
 
 	m_settings->sync();
+}
+
+void ConfigurationHandler::setTemporaryExtraRepository(const QUrl &repo)
+{
+	m_temporaryExtraRepository = repo;
+}
+void ConfigurationHandler::setTemporaryInstallRoot(const QString &dir)
+{
+	m_temporaryInstallRoot = dir;
 }

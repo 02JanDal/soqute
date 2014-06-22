@@ -19,11 +19,20 @@ void BaseCommand::showHelp()
 	parser->showHelp();
 }
 
-bool BaseCommand::execute(const QStringList &args)
+bool BaseCommand::preMetadataLoad(const QStringList &args)
 {
 	setupParser();
 	parser->parse(args);
 	Util::handleCommonArguments(parser);
 
-	return executeImplementation();
+	return preMetadataLoadImplementation();
+}
+
+int BaseCommand::execute()
+{
+	if (executeImplementation()) {
+		return 0;
+	} else {
+		return m_explicitExitCode;
+	}
 }

@@ -38,7 +38,7 @@ struct Setting
 	virtual void deleteValue(const QString &, ConfigurationHandler *)
 	{
 	}
-	virtual void set(const QString &, ConfigurationHandler *)
+	virtual bool set(const QString &, ConfigurationHandler *)
 	{
 	}
 };
@@ -77,7 +77,7 @@ struct PackageManagerSetting : public Setting
 	{
 		return QStringList() << handler->packageManager();
 	}
-	void set(const QString &value, ConfigurationHandler *handler) override
+	bool set(const QString &value, ConfigurationHandler *handler) override
 	{
 		handler->setPackageManager(value);
 	}
@@ -92,9 +92,31 @@ struct InstallPrefixSetting : public Setting
 	{
 		return QStringList() << handler->installRoot();
 	}
-	void set(const QString &value, ConfigurationHandler *handler) override
+	bool set(const QString &value, ConfigurationHandler *handler) override
 	{
 		handler->setInstallRoot(value);
+	}
+};
+struct AllowBuildSystemInstallSetting : public Setting
+{
+	AllowBuildSystemInstallSetting() : Setting("allow-build-system-install", Read | Set)
+	{
+	}
+
+	QStringList read(ConfigurationHandler *handler) override
+	{
+		return QStringList() << (handler->allowBuildSystemInstall() ? "true" : "false");
+	}
+	bool set(const QString &value, ConfigurationHandler *handler) override
+	{
+		if (value == "true") {
+			handler->setAllowBuildSystemInstall(true);
+		} else if (value == "false") {
+			handler->setAllowBuildSystemInstall(false);
+		} else {
+			return false;
+		}
+		return true;
 	}
 };
 
@@ -105,6 +127,7 @@ QList<Setting *> availableSettings()
 	settings.append(new RepositoriesSetting());
 	settings.append(new PackageManagerSetting());
 	settings.append(new InstallPrefixSetting());
+	settings.append(new AllowBuildSystemInstallSetting());
 	return settings;
 }
 
@@ -201,9 +224,12 @@ bool ConfigCommand::executeImplementation()
 
 	if (setting->supportedOperations.testFlag(operation)) {
 		if (operation == Set) {
-			setting->set(remainingArgs.first(), configHandler);
-			out << "Setting " << qPrintable(key) << " to " << qPrintable(remainingArgs.first())
-				<< endl;
+			if (!setting->set(remainingArgs.first(), configHandler)) {
+				out << "Invalid value for " << key << endl;
+			} else {
+				out << "Setting " << qPrintable(key) << " to "
+					<< qPrintable(remainingArgs.first()) << endl;
+			}
 		} else if (operation == Add) {
 			out << "Adding values to " << qPrintable(key) << endl;
 			setting->add(remainingArgs, configHandler);

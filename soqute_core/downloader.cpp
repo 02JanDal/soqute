@@ -93,6 +93,9 @@ QString Downloader::messageToString(const Downloader::Message msg, const QVarian
 	case InstallError: {
 		return tr("Installation error: %1").arg(data.toString());
 	}
+	case AuthError: {
+		return data.toString();
+	}
 	default:
 		return QString();
 	}
@@ -163,7 +166,9 @@ void Downloader::networkDone(QNetworkReply *reply)
 void Downloader::authenticationNeeded(QNetworkReply *reply, QAuthenticator *authenticator)
 {
 	if (m_authenticator) {
-		m_authenticator->authenticate(reply, authenticator);
+		if (!m_authenticator->authenticate(reply, authenticator)) {
+			addMessage(AuthError, tr("Error while authenticating"));
+		}
 	}
 }
 void Downloader::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)

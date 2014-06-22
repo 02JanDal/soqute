@@ -98,7 +98,6 @@ bool SearchCommand::executeImplementation()
 	for (const QString &row : rows) {
 		out << row << endl;
 	}
-	out << flush;
 
 	return true;
 }

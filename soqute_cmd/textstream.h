@@ -3,3 +3,4 @@
 #include <QTextStream>
 
 extern QTextStream out;
+extern QTextStream err;

@@ -11,6 +11,8 @@ set(SRCS
     showcommand.cpp
     installcommand.h
     installcommand.cpp
+    installcommandbase.h
+    installcommandbase.cpp
     util_cmd.h
     util_cmd.cpp
     textstream.h
@@ -19,6 +21,8 @@ set(SRCS
     removecommand.cpp
     updatecommand.h
     updatecommand.cpp
+    buildsystemcommand.h
+    buildsystemcommand.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/soqute_core)

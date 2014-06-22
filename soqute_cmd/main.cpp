@@ -14,6 +14,7 @@
 #include "installcommand.h"
 #include "removecommand.h"
 #include "updatecommand.h"
+#include "buildsystemcommand.h"
 #include "textstream.h"
 
 QCommandLineParser *createGeneralParser(const QString &programName)
@@ -54,9 +55,9 @@ int handleHelpCommand(const QString &programName, const QStringList &arguments,
 		if (commands.contains(command)) {
 			commands[command]->showHelp();
 		} else {
-			out << "\nUnknown command. Choose from the following:\n" << flush;
-			out << "\t" << QStringList(commands.keys()).join("\n\t") << "\n" << flush;
-			return -1;
+			out << "\nUnknown command. Choose from the following:" << endl;
+			out << "\t" << QStringList(commands.keys()).join("\n\t") << endl;
+			return 1;
 		}
 	}
 	return 0;
@@ -72,6 +73,7 @@ QMap<QString, BaseCommand *> setupCommands(LoadMetadata *metadataLoader, Configu
 	commands.insert("install", new InstallCommand(configHandler, packages, root));
 	commands.insert("remove", new RemoveCommand(configHandler, packages, root));
 	commands.insert("update", new UpdateCommand(metadataLoader, configHandler, packages, root));
+	commands.insert("buildsystem", new BuildsystemCommand(configHandler, packages, root));
 	return commands;
 }
 
@@ -94,7 +96,7 @@ int main(int argc, char *argv[])
 
 	if (arguments.size() <= 1) {
 		out << "No command given. Try \"" << arguments.first() << " help\"" << endl;
-		return -1;
+		return 1;
 	}
 
 	const QString command = arguments.at(1);
@@ -104,11 +106,16 @@ int main(int argc, char *argv[])
 
 	// command doesn't exist. notify user, show help and exit
 	if (!commands.contains(command)) {
-		out << "Unknown command \"" << command << "\".\n" << flush;
-		createGeneralParser(arguments.first())->showHelp(-1);
+		out << "Unknown command \"" << command << "\"." << endl;
+		createGeneralParser(arguments.first())->showHelp(1);
 	}
 
 	BaseCommand *cmd = commands[command];
+
+	if (!cmd->preMetadataLoad(arguments.mid(1))) {
+		out << flush;
+		return 1;
+	}
 
 	// load metadata
 	if (cmd->needMetadata()) {
@@ -131,11 +138,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (!cmd->execute(arguments.mid(1))) {
-		out << flush;
-		return 1;
-	}
+	int ret = cmd->execute();
 	out << flush;
-
-	return 0;
+	return ret;
 }

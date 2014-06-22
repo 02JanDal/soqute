@@ -12,9 +12,9 @@ namespace Util
 
 void handleCommonArguments(QCommandLineParser *parser)
 {
-	if (parser->isSet(QStringLiteral("version"))) {
+	if (parser->optionNames().contains("version") && parser->isSet(QStringLiteral("version"))) {
 		out << QCoreApplication::applicationName() << " "
-			<< QCoreApplication::applicationVersion() << endl << flush;
+			<< QCoreApplication::applicationVersion() << endl;
 		::exit(0);
 	}
 	if (!parser->applicationDescription().isEmpty() && parser->isSet(QStringLiteral("help"))) {
@@ -22,13 +22,11 @@ void handleCommonArguments(QCommandLineParser *parser)
 		::exit(0);
 	}
 	if (parser->unknownOptionNames().count() == 1) {
-		out << "Unknown option: '" << parser->unknownOptionNames().first() << "'." << endl
-			<< flush;
+		out << "Unknown option: '" << parser->unknownOptionNames().first() << "'." << endl;
 		::exit(1);
 	}
 	if (parser->unknownOptionNames().count() > 1) {
-		out << "Unknown options: '" << parser->unknownOptionNames().join(", ") << "'." << endl
-			<< flush;
+		out << "Unknown options: '" << parser->unknownOptionNames().join(", ") << "'." << endl;
 		::exit(1);
 	}
 }
@@ -46,4 +44,14 @@ bool confirm()
 	}
 	return true;
 }
+
+QString niceJoin(const QStringList &list)
+{
+	QString out = list.join(", ");
+	if (list.size() >= 2) {
+		out.replace(out.lastIndexOf(", "), 2, " and ");
+	}
+	return out;
+}
+
 }

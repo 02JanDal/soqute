@@ -1,0 +1,6 @@
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_LIST_DIR}/..")
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" "${CMAKE_BINARY_DIR}/dest")
+
+include(soqute)
+
+soqute_ensure_available(VERSION 5.1.1 __OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/Qt" PACKAGES qtcore qtwidgets)

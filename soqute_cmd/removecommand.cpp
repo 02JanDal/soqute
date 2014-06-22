@@ -51,7 +51,7 @@ void RemoveCommand::setupParser()
 bool RemoveCommand::executeImplementation()
 {
 	if (parser->positionalArguments().isEmpty()) {
-		out << "You need to specify at least one query\n" << flush;
+		out << "You need to specify at least one query" << endl;
 		return false;
 	}
 
@@ -74,13 +74,13 @@ bool RemoveCommand::executeImplementation()
 
 				if (parser->value("no-platform-behavior") == "abort" && platform.isEmpty()) {
 					out << "You need to specify a platform for the following argument: "
-						<< argument << "\n" << flush;
+						<< argument << endl;
 					return false;
 				}
 
 				if (parser->value("no-version-behavior") == "abort" && version.isEmpty()) {
 					out << "You need to specify a version for the following argument: "
-						<< argument << ", or check out --no-version-behavior\n" << flush;
+						<< argument << ", or check out --no-version-behavior" << endl;
 					return false;
 				}
 
@@ -120,21 +120,20 @@ bool RemoveCommand::executeImplementation()
 	pkgs = Util::removeDuplicatesFromList(pkgs);
 
 	if (pkgs.isEmpty()) {
-		out << "Nothing to do\n" << flush;
+		out << "Nothing to do" << endl;
 		return true;
 	}
 
 	// confirmation
 	{
 		if (!parser->isSet("silent")) {
-			out << "You have choosen to remove the following packages:\n"
-				<< "  " << flush;
+			out << "You have choosen to remove the following packages:\n  " << endl;
 			QStringList packages;
 			for (PackagePointer package : pkgs) {
 				packages.append(QString("%1 v%2 (%3)").arg(package->id(), package->version(),
 														   package->platform()));
 			}
-			out << packages.join(", ") << '\n' << flush;
+			out << packages.join(", ") << endl;
 
 			if (!Util::confirm()) {
 				return false;
@@ -151,12 +150,12 @@ bool RemoveCommand::executeImplementation()
 			qApp->processEvents();
 			qApp->sendPostedEvents();
 			while (remover.hasMessage()) {
-				out << remover.messageToString(remover.takeLastMessage()) << "\n" << flush;
+				out << remover.messageToString(remover.takeLastMessage()) << endl << flush;
 			}
 		}
 		while (remover.hasMessage()) {
 			QPair<Remover::Message, QVariant> msg = remover.takeLastMessage();
-			out << remover.messageToString(remover.takeLastMessage()) << "\n" << flush;
+			out << remover.messageToString(remover.takeLastMessage()) << endl;
 		}
 	}
 

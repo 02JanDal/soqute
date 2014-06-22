@@ -24,7 +24,7 @@ typedef QList<PackagePointer> PackagePointerList;
 class AbstractAuthenticator
 {
 public:
-	virtual void authenticate(QNetworkReply *reply, QAuthenticator *authenticator) = 0;
+	virtual bool authenticate(QNetworkReply *reply, QAuthenticator *authenticator) = 0;
 };
 
 class Downloader : public QObject
@@ -47,9 +47,14 @@ public:
 		Installing,
 		Installed,
 		InstallError,
-		SslError
+		SslError,
+		AuthError
 	};
 	static QString messageToString(const Message msg, const QVariant &data);
+	static QString messageToString(const QPair<Message, QVariant> &msg)
+	{
+		return messageToString(msg.first, msg.second);
+	}
 	bool hasMessage() const
 	{
 		return !m_messages.isEmpty();

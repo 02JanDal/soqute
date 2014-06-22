@@ -1,8 +1,8 @@
 #pragma once
 
-#include "basecommand.h"
+#include "installcommandbase.h"
 
-class InstallCommand : public BaseCommand
+class InstallCommand : public InstallCommandBase
 {
 	Q_OBJECT
 public:
@@ -10,6 +10,6 @@ public:
 							QObject *parent = 0);
 
 protected:
-	virtual void setupParser() override;
-	virtual bool executeImplementation() override;
+	void setupParser() override;
+	bool executeImplementation() override;
 };

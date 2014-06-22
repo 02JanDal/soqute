@@ -15,12 +15,16 @@ public:
 						 QObject *parent = 0);
 
 	void showHelp();
-	bool execute(const QStringList &args);
+	bool preMetadataLoad(const QStringList &args);
+	int execute();
 
 	virtual bool needMetadata() const
 	{
 		return true;
 	}
+
+private:
+	int m_explicitExitCode = 1;
 
 protected: // variables
 	QCommandLineParser *parser;
@@ -29,5 +33,8 @@ protected: // variables
 
 protected: // methods
 	virtual void setupParser() = 0;
+	virtual bool preMetadataLoadImplementation() { return true; }
 	virtual bool executeImplementation() = 0;
+
+	void setExplicitExitCode(const int code) { m_explicitExitCode = code; }
 };
