@@ -16,9 +16,14 @@ public:
 	enum Message {
 		Removing,
 		Removed,
-		RemoveError
+		RemoveError,
+		OtherError
 	};
 	static QString messageToString(const Message msg, const QVariant &data);
+	static QString messageToString(const QPair<Message, QVariant> &msg)
+	{
+		return messageToString(msg.first, msg.second);
+	}
 	bool hasMessage() const
 	{
 		return !m_messages.isEmpty();

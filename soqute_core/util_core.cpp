@@ -13,6 +13,7 @@
 #include "packagematcher.h"
 #include "installedpackages.h"
 #include "configurationhandler.h"
+#include "filesystem.h"
 
 namespace Util
 {
@@ -190,10 +191,9 @@ bool stringListToPackageList(PackageList *packages, const QStringList &packagesI
 	return true;
 }
 
-QString installationRoot(const QString &version, const QString &platform)
+QDir installationRoot(const QString &version, const QString &platform)
 {
-	QDir dir(ConfigurationHandler::instance()->installRoot());
-	return dir.absoluteFilePath(platform + "/" + version);
+	return QDir(ConfigurationHandler::instance()->installRoot() + '/' + platform + '/' + version);
 }
 QDir removalScriptsDirectory()
 {
@@ -203,76 +203,28 @@ QDir removalScriptsDirectory()
 	return dir;
 }
 
-void ensureExists(const QString &directory)
-{
-	QDir dir(directory);
-	if (!dir.exists()) {
-		dir.mkpath(dir.absolutePath());
-	}
-}
-void removeDirectoryRecursive(QDir directory)
-{
-	for (const QString &entry : directory.entryList(QDir::Files)) {
-		directory.remove(entry);
-	}
-	for (const QString &entry : directory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-		removeDirectoryRecursive(QDir(directory.absoluteFilePath(entry)));
-	}
-	QDir().rmdir(directory.absolutePath());
-}
-void removeEmptyRecursive(const QDir &dir)
-{
-	for (const QString &child : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-		removeEmptyRecursive(QDir(dir.absoluteFilePath(child)));
-	}
-	if (dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files).isEmpty()) {
-		QDir().rmdir(dir.absolutePath());
-	}
-}
-
 void installArchiveEntry(const KArchiveEntry *entry, const QString &destination)
 {
-	QDir temp = QDir::temp();
-	Util::ensureExists(temp.absoluteFilePath("soqute"));
-	temp.cd("soqute");
-	Util::ensureExists(temp.absoluteFilePath("tmp"));
-	temp.cd("tmp");
+	QDir temp = QDir(QDir::tempPath() + "/soqute/tmp");
+	FS::ensureExists(temp);
 
 	if (entry->isDirectory()) {
 		const KArchiveDirectory *directory = static_cast<const KArchiveDirectory *>(entry);
 		directory->copyTo(temp.absoluteFilePath(directory->name()));
-		if (QDir().exists(destination)) {
-			QDir().rmdir(destination);
+		if (FS::exists(destination)) {
+			FS::remove(QDir(destination));
 		}
 		temp.cd(directory->name());
-		mergeDirectoryInto(temp, QDir(destination));
-		temp.removeRecursively();
+		FS::mergeDirectoryInto(temp, QDir(destination));
+		FS::remove(temp);
 	} else {
 		const KArchiveFile *file = static_cast<const KArchiveFile *>(entry);
-		file->copyTo(temp.absoluteFilePath(file->name()));
-		if (QDir().exists(destination)) {
-			QDir().remove(destination);
+		const QString intermediateFilePath = temp.absoluteFilePath(file->name());
+		file->copyTo(intermediateFilePath);
+		if (FS::exists(destination)) {
+			FS::remove(destination);
 		}
-		QFile::copy(temp.absoluteFilePath(file->name()), destination);
-		temp.remove(file->name());
-	}
-}
-void mergeDirectoryInto(const QDir &source, const QDir &destination)
-{
-	// ensure the directory itself exists
-	if (!destination.exists()) {
-		QDir().mkdir(destination.absolutePath());
-	}
-	// and then move all the contents
-	for (const QFileInfo &entry :
-		 source.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
-		if (entry.isFile()) {
-			QFile::copy(entry.absoluteFilePath(),
-						destination.absoluteFilePath(entry.fileName()));
-		} else {
-			mergeDirectoryInto(QDir(entry.absoluteFilePath()),
-							   destination.absoluteFilePath(entry.fileName()));
-		}
+		FS::move(intermediateFilePath, destination);
 	}
 }
 

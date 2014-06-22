@@ -67,3 +67,52 @@ QByteArray FS::read(const QString &filename)
 	}
 	return data;
 }
+
+void FS::copy(const QString &from, const QString &to)
+{
+	QFile file(from);
+	if (!file.copy(to)) {
+		throw FileSystemException("Error copying file to " + to + ": " + file.errorString());
+	}
+}
+void FS::move(const QString &from, const QString &to)
+{
+	copy(from, to);
+	remove(from);
+}
+
+bool FS::exists(const QString &filename)
+{
+	return QDir().exists(filename);
+}
+bool FS::exists(const QDir &directory)
+{
+	return directory.exists();
+}
+
+void FS::removeEmptyRecursive(const QDir &dir)
+{
+	for (const QString &child : dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden)) {
+		removeEmptyRecursive(QDir(dir.absoluteFilePath(child)));
+	}
+	if (dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Files | QDir::Hidden | QDir::System).isEmpty()) {
+		remove(dir);
+	}
+}
+void FS::mergeDirectoryInto(const QDir &source, const QDir &destination)
+{
+	// ensure the directory itself exists
+	if (!FS::exists(destination)) {
+		FS::ensureExists(destination.absolutePath());
+	}
+	// and then move all the contents
+	for (const QFileInfo &entry :
+		 source.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+		if (entry.isFile()) {
+			copy(entry.absoluteFilePath(), destination.absoluteFilePath(entry.fileName()));
+		} else {
+			mergeDirectoryInto(QDir(entry.absoluteFilePath()),
+							   destination.absoluteFilePath(entry.fileName()));
+		}
+	}
+}

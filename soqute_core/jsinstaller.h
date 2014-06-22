@@ -2,6 +2,8 @@
 
 #include "abstractinstaller.h"
 
+#include <QStringList>
+
 class QJSEngine;
 
 class JSInstaller : public AbstractInstaller
@@ -18,7 +20,12 @@ slots:
 						QString *errorString = 0) override;
 
 private:
+	friend class JSObject;
+	void error(const QString &message);
+
+private:
 	QJSEngine *m_engine;
+	QStringList m_errors;
 
 	void setupEngine();
 	void setupEngineForPackage(const Package *package);

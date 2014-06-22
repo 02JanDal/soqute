@@ -7,6 +7,7 @@
 #include "jsinstaller.h"
 #include "util_core.h"
 #include "package.h"
+#include "filesystem.h"
 
 Remover::Remover(QObject *parent) : QObject(parent), m_remover(new JSInstaller(this))
 {
@@ -33,6 +34,9 @@ QString Remover::messageToString(const Remover::Message msg, const QVariant &dat
 	}
 	case RemoveError: {
 		return tr("Removal error: %1").arg(data.toString());
+	}
+	case OtherError: {
+		return tr("Error: %1").arg(data.toString());
 	}
 	default:
 		return QString(data.toString());
@@ -73,8 +77,16 @@ void Remover::errorRemoving(const QString &msg)
 
 void Remover::finalCleanup()
 {
-	if (QDir(ConfigurationHandler::instance()->installRoot()).exists()) {
-		Util::removeEmptyRecursive(QDir(ConfigurationHandler::instance()->installRoot()));
+	if (FS::exists(ConfigurationHandler::instance()->installRoot())) {
+		try
+		{
+			FS::removeEmptyRecursive(QDir(ConfigurationHandler::instance()->installRoot()));
+		}
+		catch (Exception &e)
+		{
+			addMessage(OtherError, e.message());
+			finish(false);
+		}
 	}
 }
 

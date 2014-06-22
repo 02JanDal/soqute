@@ -47,14 +47,9 @@ bool stringListToPackageList(PackageList *packages, const QStringList &packagesI
 							 QStringList &alreadyInstalledPackagesOut,
 							 QString *notFoundPackage = 0);
 
-QString installationRoot(const QString &version, const QString &platform);
+QDir installationRoot(const QString &version, const QString &platform);
 QDir removalScriptsDirectory();
 
-void ensureExists(const QString &directory);
-void removeDirectoryRecursive(QDir directory);
-void removeEmptyRecursive(const QDir &dir);
-
-void mergeDirectoryInto(const QDir &source, const QDir &destination);
 void installArchiveEntry(const KArchiveEntry *entry, const QString &destination);
 
 template <typename T> QList<T> removeDuplicatesFromList(const QList<T> &in);

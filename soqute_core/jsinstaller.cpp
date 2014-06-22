@@ -11,14 +11,34 @@
 #include "package.h"
 #include "configurationhandler.h"
 #include "util_core.h"
+#include "filesystem.h"
 
 Q_DECLARE_METATYPE(const KArchiveDirectory *)
 
-class FileSystemModifier : public QObject
+class JSObject : public QObject
 {
 	Q_OBJECT
 public:
-	FileSystemModifier(QJSEngine *engine) : QObject(engine), m_engine(engine)
+	JSObject(JSInstaller *installer, QJSEngine *engine)
+		: QObject(engine), m_installer(installer), m_engine(engine)
+	{
+	}
+
+protected:
+	JSInstaller *m_installer;
+	QJSEngine *m_engine;
+
+	void raiseError(const QString &message)
+	{
+		m_installer->error(message);
+	}
+};
+
+class FileSystemModifier : public JSObject
+{
+	Q_OBJECT
+public:
+	FileSystemModifier(JSInstaller *installer, QJSEngine *engine) : JSObject(installer, engine)
 	{
 	}
 
@@ -38,8 +58,6 @@ private:
 		}
 	}
 
-	QJSEngine *m_engine;
-
 public
 slots:
 	void mkdir(const QString &path)
@@ -48,7 +66,11 @@ slots:
 	}
 	void mkpath(const QString &path)
 	{
-		Util::ensureExists(path);
+		try {
+			FS::ensureExists(QDir(path));
+		} catch (Exception &e) {
+			raiseError(e.message());
+		}
 	}
 
 	void install(const QString &source, const QString &destination)
@@ -58,28 +80,30 @@ slots:
 											.toVariant()
 											.value<const KArchiveDirectory *>();
 		const KArchiveEntry *entry = root->entry(source);
-		Util::installArchiveEntry(entry, destination);
+		try {
+			Util::installArchiveEntry(entry, destination);
+		} catch (Exception &e) {
+			raiseError(e.message());
+		}
 	}
 	void remove(const QString &entry)
 	{
 		QFileInfo info(entry);
-		QDir dir = info.absoluteDir();
-		if (info.isDir()) {
-			Util::removeDirectoryRecursive(QDir(info.absoluteFilePath()));
-		} else {
-			dir.remove(info.fileName());
+		try {
+			FS::remove(QFileInfo(entry));
+		} catch (Exception &e) {
+			raiseError(e.message());
 		}
 	}
 };
 
-class OperatingSystem : public QObject
+class OperatingSystem : public JSObject
 {
 	Q_OBJECT
 	Q_PROPERTY(int processor READ processor)
 	Q_PROPERTY(QString os READ os)
-
 public:
-	OperatingSystem(QJSEngine *engine) : QObject(engine), m_engine(engine)
+	OperatingSystem(JSInstaller *installer, QJSEngine *engine) : JSObject(installer, engine)
 	{
 	}
 
@@ -95,7 +119,6 @@ public:
 #endif
 			;
 	}
-
 	QString os() const
 	{
 		return
@@ -108,46 +131,31 @@ public:
 #endif
 			;
 	}
-
-private:
-	QJSEngine *m_engine;
-
-public
-slots:
 };
 
-class Messenger : public QObject
+class Messenger : public JSObject
 {
 	Q_OBJECT
-
 public:
-	Messenger(QJSEngine *engine) : QObject(engine), m_engine(engine)
+	Messenger(JSInstaller *installer, QJSEngine *engine) : JSObject(installer, engine)
 	{
 	}
-
-private:
-	QJSEngine *m_engine;
 
 public
 slots:
 	void message(const QString &msg)
 	{
-		emit qobject_cast<JSInstaller *>(
-			m_engine->globalObject().property("_jsinstaller").toQObject())->message(msg);
+		emit m_installer->message(msg);
 	}
 };
 
-class SystemModifier : public QObject
+class SystemModifier : public JSObject
 {
 	Q_OBJECT
-
 public:
-	SystemModifier(QJSEngine *engine) : QObject(engine), m_engine(engine)
+	SystemModifier(JSInstaller *installer, QJSEngine *engine) : JSObject(installer, engine)
 	{
 	}
-
-private:
-	QJSEngine *m_engine;
 
 public
 slots:
@@ -173,15 +181,13 @@ slots:
 	}
 };
 
-class Paths : public QObject
+class Paths : public JSObject
 {
 	Q_OBJECT
-
 	Q_PROPERTY(QString tempPath READ tempPath)
 	Q_PROPERTY(QString installPath READ installPath)
-
 public:
-	Paths(QJSEngine *engine) : QObject(engine), m_engine(engine)
+	Paths(JSInstaller *installer, QJSEngine *engine) : JSObject(installer, engine)
 	{
 	}
 
@@ -192,9 +198,8 @@ public:
 	}
 	QString installPath() const
 	{
-		return Util::installationRoot(m_version, m_platform);
+		return Util::installationRoot(m_version, m_platform).absolutePath();
 	}
-
 	void setData(const QString &version, const QString &platform)
 	{
 		m_version = version;
@@ -202,12 +207,8 @@ public:
 	}
 
 private:
-	QJSEngine *m_engine;
 	QString m_version;
 	QString m_platform;
-
-public
-slots:
 };
 
 JSInstaller::JSInstaller(QObject *parent)
@@ -246,7 +247,14 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 
 	setupEngineForPackage(package);
 
-	Util::ensureExists(Util::installationRoot(package->version(), package->platform()));
+	try {
+		FS::ensureExists(Util::installationRoot(package->version(), package->platform()));
+	} catch (Exception &e) {
+		*errorString = tr("Error creating installation root directory: %1").arg(e.message());
+		emit error(*errorString);
+		exit(1);
+		return;
+	}
 	m_engine->globalObject().setProperty(
 		"_rootArchiveDirectory", m_engine->toScriptValue(QVariant::fromValue(directory)));
 
@@ -254,6 +262,8 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 		static_cast<const KArchiveFile *>(directory->entry("install.js"));
 
 	const QString program = QString::fromUtf8(scriptFile->data());
+
+	m_errors.clear();
 
 	QJSValue function = m_engine->evaluate(program, "install.js");
 
@@ -263,8 +273,22 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 		exit(1);
 		return;
 	}
+	if (!m_errors.isEmpty()) {
+		*errorString = tr("Error executing installation script: %1").arg(m_errors.join(", "));
+		emit error(*errorString);
+		exit(1);
+		return;
+	}
 
-	Util::ensureExists(Util::removalScriptsDirectory().absolutePath());
+	try {
+		FS::ensureExists(Util::removalScriptsDirectory());
+	} catch (Exception &e) {
+		*errorString = tr("Error creating removal scripts directory: %1").arg(e.message());
+		emit error(*errorString);
+		exit(1);
+		return;
+	}
+
 	static_cast<const KArchiveFile *>(directory->entry("remove.js"))->copyTo(QDir::tempPath());
 	QDir::temp().rename(
 		"remove.js",
@@ -298,6 +322,8 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 
 	setupEngineForPackage(package);
 
+	m_errors.clear();
+
 	QJSValue function = m_engine->evaluate(QString::fromUtf8(file.readAll()), fileName);
 
 	if (function.isError()) {
@@ -310,21 +336,35 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 		return;
 	}
 
+	if (!m_errors.isEmpty()) {
+		*errorString = tr("Error executing removal script: %1").arg(m_errors.join(", "));
+		emit error(*errorString);
+		emit message(
+			tr("Warning: Because the removal of the package failed it might now be broken, and "
+			   "you might want to reinstall it."));
+		exit(1);
+		return;
+	}
+
 	emit removePackageEnd(package);
+}
+
+void JSInstaller::error(const QString &message)
+{
+	m_errors.append(message);
 }
 
 void JSInstaller::setupEngine()
 {
-	m_engine->globalObject().setProperty("Paths", m_engine->newQObject(new Paths(m_engine)));
+	m_engine->globalObject().setProperty("Paths", m_engine->newQObject(new Paths(this, m_engine)));
 	m_engine->globalObject().setProperty("OperatingSystem",
-										 m_engine->newQObject(new OperatingSystem(m_engine)));
+										 m_engine->newQObject(new OperatingSystem(this, m_engine)));
 	m_engine->globalObject().setProperty(
-		"FileSystem", m_engine->newQObject(new FileSystemModifier(m_engine)));
+		"FileSystem", m_engine->newQObject(new FileSystemModifier(this, m_engine)));
 	m_engine->globalObject().setProperty("System",
-										 m_engine->newQObject(new SystemModifier(m_engine)));
+										 m_engine->newQObject(new SystemModifier(this, m_engine)));
 	m_engine->globalObject().setProperty("Messenger",
-										 m_engine->newQObject(new Messenger(m_engine)));
-	m_engine->globalObject().setProperty("_jsinstaller", m_engine->newQObject(this));
+										 m_engine->newQObject(new Messenger(this, m_engine)));
 }
 
 void JSInstaller::setupEngineForPackage(const Package *package)

@@ -17,6 +17,7 @@
 #include "configurationhandler.h"
 #include "installedpackages.h"
 #include "textstream.h"
+#include "filesystem.h"
 
 class CommandLineAuthenticator : public AbstractAuthenticator
 {
@@ -62,7 +63,7 @@ void InstallCommand::setupParser()
 bool InstallCommand::executeImplementation()
 {
 	// make sure the base install directory is available
-	Util::ensureExists(ConfigurationHandler::instance()->installRoot());
+	FS::ensureExists(ConfigurationHandler::instance()->installRoot());
 
 	PackagePointerList pkgs;
 

@@ -151,13 +151,12 @@ bool RemoveCommand::executeImplementation()
 			qApp->processEvents();
 			qApp->sendPostedEvents();
 			while (remover.hasMessage()) {
-				QPair<Remover::Message, QVariant> msg = remover.takeLastMessage();
-				out << remover.messageToString(msg.first, msg.second) << "\n" << flush;
+				out << remover.messageToString(remover.takeLastMessage()) << "\n" << flush;
 			}
 		}
 		while (remover.hasMessage()) {
 			QPair<Remover::Message, QVariant> msg = remover.takeLastMessage();
-			out << remover.messageToString(msg.first, msg.second) << "\n" << flush;
+			out << remover.messageToString(remover.takeLastMessage()) << "\n" << flush;
 		}
 	}
 
