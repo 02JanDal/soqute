@@ -17,6 +17,8 @@ set(SRCS
     textstream.cpp
     removecommand.h
     removecommand.cpp
+    updatecommand.h
+    updatecommand.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/soqute_core)

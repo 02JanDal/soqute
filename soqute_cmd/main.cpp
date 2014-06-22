@@ -13,6 +13,7 @@
 #include "showcommand.h"
 #include "installcommand.h"
 #include "removecommand.h"
+#include "updatecommand.h"
 #include "textstream.h"
 
 QCommandLineParser *createGeneralParser(const QString &programName)
@@ -61,7 +62,7 @@ int handleHelpCommand(const QString &programName, const QStringList &arguments,
 	return 0;
 }
 
-QMap<QString, BaseCommand *> setupCommands(ConfigurationHandler *configHandler,
+QMap<QString, BaseCommand *> setupCommands(LoadMetadata *metadataLoader, ConfigurationHandler *configHandler,
 										   PackageList *packages, QObject *root)
 {
 	QMap<QString, BaseCommand *> commands;
@@ -70,6 +71,7 @@ QMap<QString, BaseCommand *> setupCommands(ConfigurationHandler *configHandler,
 	commands.insert("config", new ConfigCommand(configHandler, packages, root));
 	commands.insert("install", new InstallCommand(configHandler, packages, root));
 	commands.insert("remove", new RemoveCommand(configHandler, packages, root));
+	commands.insert("update", new UpdateCommand(metadataLoader, configHandler, packages, root));
 	return commands;
 }
 
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 	LoadMetadata *metadataLoader = new LoadMetadata(packages, root);
 	metadataLoader->setRepositoryList(configHandler->repositoryUrls());
 
-	QMap<QString, BaseCommand *> commands = setupCommands(configHandler, packages, root);
+	QMap<QString, BaseCommand *> commands = setupCommands(metadataLoader, configHandler, packages, root);
 
 	const QStringList arguments = a.arguments();
 
@@ -114,7 +116,7 @@ int main(int argc, char *argv[])
 		{
 			while (metadataLoader->hasMessage()) {
 				QPair<LoadMetadata::Message, QVariant> msg = metadataLoader->takeLastMessage();
-				out << metadataLoader->messageToString(msg.first, msg.second) << "\n" << flush;
+				out << LoadMetadata::messageToString(msg.first, msg.second) << endl << flush;
 			}
 		};
 
