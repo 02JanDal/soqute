@@ -140,3 +140,13 @@ void ConfigurationHandler::setTemporaryInstallRoot(const QString &dir)
 {
 	m_temporaryInstallRoot = dir;
 }
+
+void ConfigurationHandler::set(const QString &key, const QVariant &value)
+{
+	m_settings->setValue(key, value);
+	m_settings->sync();
+}
+QVariant ConfigurationHandler::get(const QString &key, const QVariant &defaultValue) const
+{
+	return m_settings->value(key, defaultValue);
+}

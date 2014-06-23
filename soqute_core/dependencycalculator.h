@@ -43,7 +43,7 @@ slots:
 	void setStartingPoint(const PackagePointerList packages);
 
 signals:
-	void noSuchPackage(const QString &id, const QString &version, const QString &platform);
+	void noSuchPackage(const QString &id, const QString &version, const QString &host, const QString &target);
 	void done();
 
 private:

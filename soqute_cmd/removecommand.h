@@ -3,6 +3,7 @@
 #include "basecommand.h"
 
 class Package;
+typedef const Package * PackagePointer;
 
 class RemoveCommand : public BaseCommand
 {
@@ -16,5 +17,5 @@ protected:
 	virtual bool executeImplementation() override;
 
 private:
-	bool isNewestInstalled(const Package *entity);
+	bool isNewestInstalled(PackagePointer entity);
 };

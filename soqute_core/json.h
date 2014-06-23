@@ -150,4 +150,41 @@ T ensureIsType(const QJsonObject &parent, const QString &key, const T default_,
 	}
 	return ensureIsType<T>(parent.value(key), default_, localWhat);
 }
+
+template<typename T>
+QList<T> ensureIsArrayOf(const QJsonValue &value, const Requirement = Required, const QString &what = "Value")
+{
+	const QJsonArray array = ensureArray(value, what);
+	QList<T> out;
+	for (const QJsonValue val : array) {
+		out.append(ensureIsType<T>(val, Required, what));
+	}
+	return out;
+}
+template<typename T>
+QList<T> ensureIsArrayOf(const QJsonValue &value, const T default_, const QString &what = "Value")
+{
+	if (value.isUndefined()) {
+		return default_;
+	}
+	return ensureIsArrayOf<T>(value, Required, what);
+}
+template<typename T>
+QList<T> ensureIsArrayOf(const QJsonObject &parent, const QString &key, const Requirement requirement = Required, const QString &what = "__placeholder__")
+{
+	const QString localWhat = QString(what).replace("__placeholder__", '\'' + key + '\'');
+	if (!parent.contains(key)) {
+		throw JsonException(localWhat + "s parent does not contain " + localWhat);
+	}
+	return ensureIsArrayOf<T>(parent.value(key), requirement, localWhat);
+}
+template<typename T>
+QList<T> ensureIsArrayOf(const QJsonObject &parent, const QString &key, const QList<T> &default_, const QString &what = "__placeholder__")
+{
+	const QString localWhat = QString(what).replace("__placeholder__", '\'' + key + '\'');
+	if (!parent.contains(key)) {
+		return default_;
+	}
+	return ensureIsArrayOf<T>(parent.value(key), default_, localWhat);
+}
 }

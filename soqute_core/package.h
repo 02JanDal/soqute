@@ -10,6 +10,8 @@
 class Dependency;
 class Package;
 class PackageList;
+typedef const Package *PackagePointer;
+typedef QList<PackagePointer> PackagePointerList;
 
 class SOQUTE_CORESHARED_EXPORT Dependency : public QObject
 {
@@ -69,8 +71,8 @@ class SOQUTE_CORESHARED_EXPORT Package : public QObject
 	Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY
 				   descriptionChanged)
 	Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
-	// TODO might support multiple platforms. different packages or expend this property?
-	Q_PROPERTY(QString platform READ platform WRITE setPlatform NOTIFY platformChanged)
+	Q_PROPERTY(QString host READ host WRITE setHost NOTIFY hostChanged)
+	Q_PROPERTY(QString target READ target WRITE setTarget NOTIFY targetChanged)
 	Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
 	Q_PROPERTY(QList<Dependency *> dependencies READ dependencies WRITE setDependencies NOTIFY
 				   dependenciesChanged)
@@ -92,9 +94,13 @@ public:
 	{
 		return m_version;
 	}
-	QString platform() const
+	QString host() const
 	{
-		return m_platform;
+		return m_host;
+	}
+	QString target() const
+	{
+		return m_target;
 	}
 	QUrl url() const
 	{
@@ -109,13 +115,14 @@ public:
 		return m_nativeDependencies;
 	}
 
-	QList<const Package *> recursiveDependencies() const;
+	QList<PackagePointer> recursiveDependencies() const;
 
 signals:
 	void idChanged(QString arg);
 	void descriptionChanged(QString arg);
 	void versionChanged(QString arg);
-	void platformChanged(QString arg);
+	void hostChanged(QString arg);
+	void targetChanged(QString arg);
 	void urlChanged(QUrl arg);
 	void dependenciesChanged(QList<Dependency *> arg);
 	void nativeDependenciesChanged(QMap<QString, QStringList> arg);
@@ -143,13 +150,21 @@ slots:
 			emit versionChanged(arg);
 		}
 	}
-	void setPlatform(QString arg)
+	void setHost(QString arg)
 	{
-		if (m_platform != arg) {
-			m_platform = arg;
-			emit platformChanged(arg);
+		if (m_host != arg) {
+			m_host = arg;
+			emit hostChanged(arg);
 		}
 	}
+	void setTarget(QString arg)
+	{
+		if (m_target != arg) {
+			m_target = arg;
+			emit targetChanged(arg);
+		}
+	}
+
 	void setUrl(QUrl arg)
 	{
 		if (m_url != arg) {
@@ -177,14 +192,12 @@ private:
 	QString m_id;
 	QString m_description;
 	QString m_version;
-	QString m_platform;
+	QString m_host;
+	QString m_target;
 	QUrl m_url;
 	QList<Dependency *> m_dependencies;
 	QMap<QString, QStringList> m_nativeDependencies;
 };
-
-typedef const Package *PackagePointer;
-typedef QList<PackagePointer> PackagePointerList;
 
 Q_DECLARE_METATYPE(PackagePointer)
 
@@ -197,7 +210,7 @@ class SOQUTE_CORESHARED_EXPORT PackageList : public QObject
 public:
 	PackageList(QObject *parent = 0);
 
-	bool parse(const QByteArray &data);
+	void parse(const QByteArray &data);
 
 	PackagePointerList entities() const
 	{
@@ -209,12 +222,12 @@ public:
 	 * platform and id supplied
 	 */
 	PackagePointer package(const QString &id, const QString &version = QString(),
-						   const QString &platform = QString()) const;
+						   const QString &host = QString(), const QString &target = QString()) const;
 
 	/**
 	 * \returns The package associated with the dependency, or null if no such package exists
 	 */
-	PackagePointer package(const Dependency *dependency, const QString &platform) const;
+	PackagePointer package(const Dependency *dependency, const QString &host, const QString &target) const;
 
 	/**
 	 * \returns Other packages with the same id (but other versions/platforms)
@@ -238,7 +251,7 @@ public:
 
 signals:
 	void entitiesChanged(PackagePointerList arg);
-	void parseError(const QString &error, const int offset);
+	void parseError(const QString &error);
 
 public
 slots:

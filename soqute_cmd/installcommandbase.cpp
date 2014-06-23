@@ -39,8 +39,8 @@ void InstallCommandBase::constructPackageList(const QStringList cliPackages)
 	{
 		QString notFoundPackage;
 		QStringList alreadyInstalledPackagesOut;
-		if (!Util::stringListToPackageList(packages, cliPackages, m_pkgs,
-										   alreadyInstalledPackagesOut, &notFoundPackage)) {
+		if (!Util::stringListToPackageList(packages, cliPackages, m_pkgs, QString(),
+										   &alreadyInstalledPackagesOut, &notFoundPackage)) {
 			throw Exception(
 				tr("The following package could not be found: %1").arg(notFoundPackage));
 		}
@@ -60,8 +60,7 @@ void InstallCommandBase::constructPackageList(const QStringList cliPackages)
 		QMutableListIterator<PackagePointer> it(m_pkgs);
 		while (it.hasNext()) {
 			PackagePointer pkg = it.next();
-			if (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(
-					pkg->id(), pkg->version(), pkg->platform())) {
+			if (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(pkg)) {
 				it.remove();
 			}
 		}

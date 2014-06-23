@@ -7,6 +7,7 @@
 #include <QCommandLineParser>
 
 #include "util_cmd.h"
+#include "util_core.h"
 #include "configurationhandler.h"
 #include "package.h"
 #include "dependencycalculator.h"
@@ -26,11 +27,12 @@ void ShowCommand::setupParser()
 	parser->addVersionOption();
 	parser->addHelpOption();
 	parser->addPositionalArgument(tr("package identifer"), tr("The identifier of the package"),
-								  tr("<package-name>[/<version>][#<platform>]"));
+								  tr("<package-name>[/<version>][#<target>]"));
 	parser->addOption(QCommandLineOption(
 		QStringList() << "nativeDependencies",
 		tr("Only outputs the native packages for piping to the package manager"),
 		tr("package-manager"), configHandler->packageManager()));
+	parser->addOption(QCommandLineOption("host", tr("Show packages for the <platform> instead of the current platform"), tr("platform"), Util::currentPlatform()));
 }
 
 bool ShowCommand::executeImplementation()
@@ -40,50 +42,45 @@ bool ShowCommand::executeImplementation()
 		return false;
 	}
 
-	// captures expressions like this: <name>[/<version>][#<platform>]
-	// examples: qtbase/5.0.0#win32-g++
-	//           qtjsbackend
-	//           qtpim#linux-g++-32
-	//           qtquick1/5.1.0
-	QRegularExpression exp("([a-z0-9\\-_\\+]*)(/[a-z0-9\\-\\+\\.]*)?(#[a-z0-9\\-\\+]*)?");
-	QRegularExpressionMatch match = exp.match(parser->positionalArguments()[0]);
-	const QString id = match.captured(1);
-	const QString version = match.captured(2).remove(0, 1);
-	const QString platform = match.captured(3).remove(0, 1);
+	QList<PackagePointer> pkgs;
+	if (!Util::stringListToPackageList(packages, QStringList() << parser->positionalArguments()[0], pkgs, parser->value("host"), 0)) {
+		out << "Invalid package identifier given" << endl;
+		return false;
+	}
 
-	const Package *package = packages->package(id, version, platform);
-
-	if (package == 0) {
+	if (pkgs.isEmpty()) {
 		out << "No such package found" << endl;
 		return false;
 	}
 
+	PackagePointer package = pkgs.first();
+
 	if (!parser->isSet("nativeDependencies")) {
 		// populate the other versions/platforms lists
 		const QList<const Package *> others = packages->otherPackages(package);
-		QStringList allPlatforms;
+		QStringList allTargets;
 		QStringList allVersions;
 		for (PackagePointer pkg : others) {
-			allPlatforms.append(pkg->platform());
+			allTargets.append(pkg->target());
 			allVersions.append(pkg->version());
 		}
-		allPlatforms.removeDuplicates();
-		allPlatforms.removeAll(package->platform());
+		allTargets.removeDuplicates();
+		allTargets.removeAll(package->target());
 		allVersions.removeDuplicates();
 		allVersions.removeAll(package->version());
 
 		// just output everything
 		out << "Status:              "
 			<< (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(
-					package->id(), package->version(), package->platform())
+					package)
 					? "Installed"
 					: "Not installed") << endl;
 		out << "ID:                  " << package->id() << endl
 			<< "Description:         " << package->description() << endl
 			<< "Version:             " << package->version() << endl
 			<< "Other versions:      " << allVersions.join(", ") << endl
-			<< "Platform:            " << package->platform() << endl
-			<< "Other platforms:     " << allPlatforms.join(", ") << endl
+			<< "Target:              " << package->target() << endl
+			<< "Other targets:       " << allTargets.join(", ") << endl
 			<< "Dependencies:        ";
 		for (PackagePointer p : package->recursiveDependencies()) {
 			out << p->id() << " ";

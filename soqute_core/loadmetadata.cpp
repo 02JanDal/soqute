@@ -104,7 +104,8 @@ void LoadMetadata::networkFinished()
 	if (reply->error() == QNetworkReply::NoError) {
 		try
 		{
-			m_packages->parse(FS::read(m_cache->addEntry(reply)));
+			const QString filename = m_cache->addEntry(reply);
+			m_packages->parse(FS::read(filename));
 		}
 		catch (Exception &e)
 		{
@@ -133,10 +134,9 @@ void LoadMetadata::networkError()
 	addMessage(NetworkError, data);
 }
 
-void LoadMetadata::parseError(const QString &errorString, const int offset)
+void LoadMetadata::parseError(const QString &errorString)
 {
 	QMap<QString, QVariant> data;
 	data["errorString"] = errorString;
-	data["offset"] = offset;
 	addMessage(ParserError, data);
 }

@@ -14,6 +14,7 @@
 #include "jsinstaller.h"
 #include "configurationhandler.h"
 #include "installedpackages.h"
+#include "util_core.h"
 
 Q_DECLARE_METATYPE(QSslError)
 
@@ -68,8 +69,8 @@ QString Downloader::messageToStringImpl(const int msg, const QVariant &data) con
 	}
 	case ReceivedArchive: {
 		PackagePointer pkg = data.value<PackagePointer>();
-		return tr("Received archive for package %1 v%2 (%3)")
-			.arg(pkg->id(), pkg->version(), pkg->platform());
+		return tr("Received archive for package %1")
+			.arg(Util::createFriendlyName(pkg));
 	}
 	case ArchiveSaveError: {
 		return tr("There was an error saving the received archive: %1").arg(data.toString());
@@ -84,11 +85,11 @@ QString Downloader::messageToStringImpl(const int msg, const QVariant &data) con
 	}
 	case Installing: {
 		PackagePointer pkg = data.value<PackagePointer>();
-		return tr("Installing %1 v%2 (%3)...").arg(pkg->id(), pkg->version(), pkg->platform());
+		return tr("Installing %1...").arg(Util::createFriendlyName(pkg));
 	}
 	case Installed: {
 		PackagePointer pkg = data.value<PackagePointer>();
-		return tr("Installed %1 v%2 (%3)").arg(pkg->id(), pkg->version(), pkg->platform());
+		return tr("Installed %1").arg(Util::createFriendlyName(pkg));
 	}
 	case InstallError: {
 		return tr("Installation error: %1").arg(data.toString());
@@ -190,8 +191,7 @@ void Downloader::installPackageBegin(const Package *package)
 void Downloader::installPackageEnd(const Package *package)
 {
 	addMessage(Installed, QVariant::fromValue(package));
-	ConfigurationHandler::instance()->installedPackages()->setPackageInstalled(
-		package->id(), package->version(), package->platform());
+	ConfigurationHandler::instance()->installedPackages()->setPackageInstalled(package);
 	if (!m_packagesToDownload.isEmpty()) {
 		installNextPackage();
 	} else {

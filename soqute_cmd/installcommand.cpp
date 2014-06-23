@@ -6,6 +6,7 @@
 #include "textstream.h"
 #include "exception.h"
 #include "util_cmd.h"
+#include "util_core.h"
 
 InstallCommand::InstallCommand(ConfigurationHandler *configHandler, PackageList *packages,
 							   QObject *parent)
@@ -47,8 +48,7 @@ bool InstallCommand::executeImplementation()
 				out << "You have choosen to install the following packages:\n  ";
 				QStringList packages;
 				for (PackagePointer package : m_pkgs) {
-					packages.append(QString("%1 v%2 (%3)").arg(
-						package->id(), package->version(), package->platform()));
+					packages.append(Util::createFriendlyName(package));
 				}
 				out << packages.join(", ") << endl;
 

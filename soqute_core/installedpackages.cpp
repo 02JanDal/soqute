@@ -11,25 +11,27 @@ InstalledPackages::InstalledPackages(QSettings *settings, QObject *parent)
 {
 }
 
-bool InstalledPackages::isPackageInstalled(const QString &id, const QString &version,
-										   const QString &platform) const
+bool InstalledPackages::isPackageInstalled(const QString &id, const QString &version, const QString &host, const QString &target) const
 {
 	// TODO version.isNull() should match all versions
-	const QString key = generateKey(id, version, platform);
+	const QString key = generateKey(id, version, host, target);
 	return m_settings->allKeys().contains(key) && m_settings->value(key).toBool();
 }
 
-void InstalledPackages::setPackageInstalled(const QString &id, const QString &version,
-											const QString &platform)
+bool InstalledPackages::isPackageInstalled(PackagePointer package) const
 {
-	m_settings->setValue(generateKey(id, version, platform), true);
+	return isPackageInstalled(package->id(), package->version(), package->host(), package->target());
+}
+
+void InstalledPackages::setPackageInstalled(PackagePointer package)
+{
+	m_settings->setValue(generateKey(package), true);
 	m_settings->sync();
 }
 
-void InstalledPackages::setPackageUninstalled(const QString &id, const QString &version,
-											  const QString &platform)
+void InstalledPackages::setPackageUninstalled(PackagePointer package)
 {
-	m_settings->setValue(generateKey(id, version, platform), false);
+	m_settings->setValue(generateKey(package), false);
 	m_settings->sync();
 }
 
@@ -37,14 +39,18 @@ QList<const Package *> InstalledPackages::installedPackages(PackageList *package
 {
 	m_settings->beginGroup("InstalledPackages");
 
-	QList<const Package *> out;
+	QList<PackagePointer> out;
 
-	for (const QString &platform : m_settings->childGroups()) {
-		m_settings->beginGroup(platform);
-		for (const QString &id : m_settings->childGroups()) {
-			m_settings->beginGroup(id);
-			for (const QString &version : m_settings->childKeys()) {
-				out.append(packages->package(id, version, platform));
+	for (const QString &id : m_settings->childGroups()) {
+		m_settings->beginGroup(id);
+		for (const QString &host : m_settings->childGroups()) {
+			m_settings->beginGroup(host);
+			for (const QString &target : m_settings->childGroups()) {
+				m_settings->beginGroup(target);
+				for (const QString &version : m_settings->childKeys()) {
+					out.append(packages->package(id, version, host, target));
+				}
+				m_settings->endGroup();
 			}
 			m_settings->endGroup();
 		}
@@ -56,24 +62,31 @@ QList<const Package *> InstalledPackages::installedPackages(PackageList *package
 	return out;
 }
 
-bool InstalledPackages::isNewestInstalled(const QString &id, const QString &version,
-										  const QString &platform)
+bool InstalledPackages::isNewestInstalled(PackagePointer package)
 {
 	m_settings->beginGroup("InstalledPackages");
-	if (!m_settings->childGroups().contains(id)) {
+	if (!m_settings->childGroups().contains(package->id())) {
 		m_settings->endGroup();
 		return false;
 	}
-	m_settings->beginGroup(id);
-	if (!m_settings->childGroups().contains(platform)) {
+	m_settings->beginGroup(package->id());
+	if (!m_settings->childGroups().contains(package->host())) {
 		m_settings->endGroup();
 		m_settings->endGroup();
 		return false;
 	}
-	m_settings->beginGroup(platform);
+	m_settings->beginGroup(package->host());
+	if (!m_settings->childGroups().contains(package->target())) {
+		m_settings->endGroup();
+		m_settings->endGroup();
+		m_settings->endGroup();
+		return false;
+	}
+	m_settings->beginGroup(package->target());
 	QStringList installedVersions = m_settings->childKeys();
 	for (const QString &installedVersion : installedVersions) {
-		if (Util::isVersionHigherThan(installedVersion, version)) {
+		if (Util::isVersionHigherThan(installedVersion, package->version())) {
+			m_settings->endGroup();
 			m_settings->endGroup();
 			m_settings->endGroup();
 			m_settings->endGroup();
@@ -83,11 +96,17 @@ bool InstalledPackages::isNewestInstalled(const QString &id, const QString &vers
 	m_settings->endGroup();
 	m_settings->endGroup();
 	m_settings->endGroup();
+	m_settings->endGroup();
 	return true;
 }
 
-const QString InstalledPackages::generateKey(const QString &id, const QString &version,
-											 const QString &platform) const
+const QString InstalledPackages::generateKey(PackagePointer pkg) const
 {
-	return QString("InstalledPackages/%1/%2/%3").arg(id, platform, version);
+	return generateKey(pkg->id(), pkg->version(), pkg->host(), pkg->target());
+	return QString("InstalledPackages/%1/%2/%3/%4").arg(pkg->id(), pkg->host(), pkg->target(), pkg->version());
+}
+const QString InstalledPackages::generateKey(const QString &id, const QString &version,
+											 const QString &host, const QString &target) const
+{
+	return QString("InstalledPackages/%1/%2/%3/%4").arg(id, host, target, version);
 }

@@ -49,5 +49,5 @@ slots:
 	void networkFinished();
 	void networkProgress(qint64 received, qint64 total);
 	void networkError();
-	void parseError(const QString &errorString, const int offset);
+	void parseError(const QString &errorString);
 };

@@ -24,7 +24,10 @@ private
 slots:
 	void dataRead()
 	{
-		out << m_device->readAll() << flush;
+		while (m_device->canReadLine()) {
+			out << "    " << m_device->readLine();
+		}
+		out << flush;
 	}
 
 private:
@@ -41,23 +44,23 @@ bool confirm()
 }
 
 QDir appDir;
-QByteArray runProgram(const QString &program, const QStringList &arguments = QStringList())
+bool runProgram(const QString &program, const QStringList &arguments = QStringList())
 {
 	out << "  Running " << program << " " << arguments.join(' ') << endl << flush;
 	QProcess proc;
 	proc.setProgram(program);
 	proc.setWorkingDirectory(appDir.absolutePath());
 	proc.setArguments(arguments);
-	proc.setProcessChannelMode(QProcess::MergedChannels);
 	proc.setProcessEnvironment(env);
-	Output out(&proc);
+	proc.setProcessChannelMode(QProcess::MergedChannels);
+	Output output(&proc);
 	proc.start();
 	proc.waitForStarted(-1);
 	proc.waitForFinished(-1);
-	if (proc.exitCode() != QProcess::NormalExit) {
-		return "err";
+	if (proc.exitCode() != QProcess::NormalExit || proc.error() != QProcess::UnknownError) {
+		return false;
 	}
-	return proc.readAll();
+	return true;
 }
 
 bool compareEntry(const QFileInfo &i1, const QFileInfo &i2);
@@ -134,8 +137,6 @@ int main(int argc, char *argv[])
 	QCoreApplication a(argc, argv);
 
 	appDir = a.applicationDirPath();
-	appDir.cdUp();
-	appDir.cd("soqute_cmd");
 	appDir.refresh();
 
 	out << "Preparing..." << endl << flush;
@@ -154,16 +155,15 @@ int main(int argc, char *argv[])
 		<< endl << flush;
 	out << "    " << dir.absolutePath() << endl << flush;
 	out << "  Continue? " << flush;
-	if (false && !confirm()) {
+	if (!a.arguments().contains("no-interaction") && !confirm()) {
 		return 0;
 	}
 
 	out << "Setting up enviroment variables..." << endl << flush;
-	env.insert("LD_LIBRARY_PATH", QDir::cleanPath(QDir(a.applicationDirPath())
-													  .absoluteFilePath("../soqute_core")));
+	env.insert("LD_LIBRARY_PATH", QDir::cleanPath(a.applicationDirPath()));
 	QString PATH = env.value("PATH");
 	PATH +=
-		":" + QDir::cleanPath(QDir(a.applicationDirPath()).absoluteFilePath("../soqute_cmd"));
+		":" + QDir::cleanPath(a.applicationDirPath());
 	env.insert("PATH", PATH);
 
 	out << "Creating backup of configuration file..." << endl << flush;
@@ -175,18 +175,17 @@ int main(int argc, char *argv[])
 												"test_meta.json").toString();
 	if (runProgram("./soqute_cmd", QStringList() << "config"
 												 << "--add"
-												 << "repositories" << repoUrl) != "err") {
+												 << "repositories" << repoUrl)) {
 		if (runProgram("./soqute_cmd", QStringList() << "config"
 													 << "--set"
 													 << "install-prefix"
-													 << dir.absolutePath()) != "err") {
+													 << dir.absolutePath())) {
 
 			out << "Installing..." << endl << flush;
 			if (runProgram("./soqute_cmd", QStringList()
 											   << "install"
 											   << "--silent"
-											   << "testpackage/1.0.0#generic-test-platform") !=
-				"err") {
+											   << "testpackage/1.0.0#generic-test-platform")) {
 
 				QDir installDir(dir);
 				installDir.cd("generic-test-platform");
@@ -203,14 +202,12 @@ int main(int argc, char *argv[])
 						out << "ERROR: Directories don't match" << endl << flush;
 					} else {
 						out << "SUCCESS: Installing packages" << endl << flush;
-						return 0;
 						out << "Removing first package..." << endl << flush;
 						if (runProgram("./soqute_cmd",
 									   QStringList()
 										   << "remove"
 										   << "--silent"
-										   << "testpackage1/1.0.0#generic-test-platform") !=
-							"err") {
+										   << "testpackage1/1.0.0#generic-test-platform")) {
 							fromDir.cdUp();
 							fromDir.cd("package2");
 							fromDir.refresh();
@@ -223,11 +220,10 @@ int main(int argc, char *argv[])
 										QStringList()
 											<< "remove"
 											<< "--silent"
-											<< "testpackage2/1.0.0#generic-test-platform") !=
-									"err") {
+											<< "testpackage2/1.0.0#generic-test-platform")) {
 									installDir.refresh();
 									if (installDir.count() > 0) {
-										out << "ERROR: Installation directory is not empty"
+										out << "ERROR: Installation directory is not empty (files left: " << installDir.entryList().join(", ") << ")"
 											<< endl << flush;
 									} else {
 										out << "SUCCESS: Removing packages" << endl << flush;
@@ -251,7 +247,7 @@ int main(int argc, char *argv[])
 		dir.removeRecursively();
 	}
 
-	return a.exec();
+	return 0;
 }
 
 #include "main.moc"

@@ -47,8 +47,7 @@ bool DependencyCalculator::calculateDependencies(const Direction direction,
 		m_result.clear();
 		for (const Package *package : res) {
 			if (!m_result.contains(package) &&
-				installed->isPackageInstalled(package->id(), package->version(),
-											  package->platform())) {
+				installed->isPackageInstalled(package)) {
 				m_result.append(package);
 			}
 		}
@@ -69,13 +68,13 @@ PackagePointerList
 {
 	PackagePointerList packages;
 	for (const Dependency *dependency : package->dependencies()) {
-		const Package *pkg = m_packages->package(dependency, package->platform());
+		const Package *pkg = m_packages->package(dependency, package->host(), package->target());
 		if (pkg == 0) {
-			emit noSuchPackage(dependency->id(), dependency->version(), package->platform());
+			emit noSuchPackage(dependency->id(), dependency->version(), package->host(), package->target());
 			if (ok) {
 				*ok = false;
 				if (notFoundPackage) {
-					*notFoundPackage = m_packages->package(dependency, package->platform());
+					*notFoundPackage = m_packages->package(dependency, package->host(), package->target());
 				}
 			}
 			return packages;
@@ -97,7 +96,7 @@ PackagePointerList DependencyCalculator::calculateDependenciesReverse(const Pack
 	PackagePointerList out;
 	out.append(package);
 	for (PackagePointer pkg : m_packages->entities()) {
-		if (pkg->platform() == package->platform() && !out.contains(pkg)) {
+		if (pkg->host() == package->host() && pkg->target() == package->target() && !out.contains(pkg)) {
 			for (const Dependency *dep : pkg->dependencies()) {
 				if (dep->id() == package->id() && dep->version() == package->version()) {
 					out.append(calculateDependenciesReverse(pkg, intendent + "  "));

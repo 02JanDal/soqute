@@ -6,6 +6,7 @@ class QSettings;
 
 class PackageList;
 class Package;
+typedef const Package *PackagePointer;
 
 class InstalledPackages : public QObject
 {
@@ -13,14 +14,12 @@ class InstalledPackages : public QObject
 public:
 	explicit InstalledPackages(QSettings *settings, QObject *parent = 0);
 
-	bool isPackageInstalled(const QString &id, const QString &version,
-							const QString &platform) const;
-	void setPackageInstalled(const QString &id, const QString &version,
-							 const QString &platform);
-	void setPackageUninstalled(const QString &id, const QString &version,
-							   const QString &platform);
+	bool isPackageInstalled(const QString &id, const QString &version, const QString &host, const QString &target) const;
+	bool isPackageInstalled(PackagePointer package) const;
+	void setPackageInstalled(PackagePointer package);
+	void setPackageUninstalled(PackagePointer package);
 	QList<const Package *> installedPackages(PackageList *packages) const;
-	bool isNewestInstalled(const QString &id, const QString &version, const QString &platform);
+	bool isNewestInstalled(PackagePointer package);
 
 signals:
 
@@ -30,6 +29,7 @@ slots:
 private:
 	QSettings *m_settings;
 
+	const QString generateKey(PackagePointer pkg) const;
 	const QString generateKey(const QString &id, const QString &version,
-							  const QString &platform) const;
+							  const QString &host, const QString &target) const;
 };

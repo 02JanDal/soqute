@@ -10,11 +10,11 @@ PackageMatcher::PackageMatcher(PackageList *packages) : m_packages(packages)
 }
 
 PackagePointerList PackageMatcher::matchPackages(const QString &name, const QString &version,
-												 const QString &platform) const
+												 const QString &host, const QString &target) const
 {
-	QString _platform = platform;
-	if (_platform.isNull()) {
-		_platform = Util::currentPlatform();
+	QString hst = host;
+	if (hst.isNull()) {
+		hst = Util::currentPlatform();
 	}
 
 	PackagePointerList result;
@@ -23,9 +23,9 @@ PackagePointerList PackageMatcher::matchPackages(const QString &name, const QStr
 	QMap<QString, PackagePointer> pending;
 	const PackagePointerList packages = m_packages->entities();
 	for (PackagePointer pkg : packages) {
-		if (pkg->id() == name && (pkg->platform().isEmpty() || _platform == pkg->platform())) {
+		if (pkg->id() == name && (pkg->host().isEmpty() || hst == pkg->host()) && (pkg->target().isEmpty() || target.isEmpty() || target == pkg->target())) {
 			if (version.isEmpty()) {
-				const QString identifier = QString("%1#%2").arg(pkg->id(), pkg->platform());
+				const QString identifier = QString("%1#%2#%3").arg(pkg->id(), pkg->host(), pkg->target());
 				if (pending.contains(identifier)) {
 					if (Util::isVersionHigherThan(pkg->version(),
 												  pending[identifier]->version())) {
@@ -44,9 +44,9 @@ PackagePointerList PackageMatcher::matchPackages(const QString &name, const QStr
 }
 
 PackagePointer PackageMatcher::matchSinglePackage(const QString &name, const QString &version,
-												  const QString &platform) const
+												  const QString &host, const QString &target) const
 {
-	PackagePointerList results = matchPackages(name, version, platform);
+	PackagePointerList results = matchPackages(name, version, host, target);
 	if (results.isEmpty()) {
 		return 0;
 	}

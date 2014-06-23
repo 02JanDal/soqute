@@ -26,11 +26,11 @@ QString Remover::messageToStringImpl(const int msg, const QVariant &data) const
 	switch (msg) {
 	case Removing: {
 		PackagePointer pkg = data.value<PackagePointer>();
-		return tr("Removing %1 v%2 (%3)...").arg(pkg->id(), pkg->version(), pkg->platform());
+		return tr("Removing %1...").arg(Util::createFriendlyName(pkg));
 	}
 	case Removed: {
 		PackagePointer pkg = data.value<PackagePointer>();
-		return tr("Removed %1 v%2 (%3)").arg(pkg->id(), pkg->version(), pkg->platform());
+		return tr("Removed %1").arg(Util::createFriendlyName(pkg));
 	}
 	case RemoveError: {
 		return tr("Removal error: %1").arg(data.toString());
@@ -60,8 +60,7 @@ void Remover::removePackageBegin(const Package *package)
 void Remover::removePackageEnd(const Package *package)
 {
 	addMessage(Removed, QVariant::fromValue(package));
-	ConfigurationHandler::instance()->installedPackages()->setPackageUninstalled(
-		package->id(), package->version(), package->platform());
+	ConfigurationHandler::instance()->installedPackages()->setPackageUninstalled(package);
 	if (!m_packagesToRemove.isEmpty()) {
 		removeNextPackage();
 	} else {
@@ -95,6 +94,6 @@ void Remover::removeNextPackage()
 {
 	const Package *package = m_packagesToRemove.takeFirst();
 	emit removePackage(package, Util::removalScriptsDirectory().absoluteFilePath(QString(
-									"%1-%2-%3-remove.js").arg(package->id(), package->version(),
-															  package->platform())));
+									"%1-%2-%3-%4-remove.js").arg(package->id(), package->version(),
+															  package->host(), package->target())));
 }

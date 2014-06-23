@@ -111,12 +111,12 @@ bool isVersionHigherThan(const QString &v1, const QString &v2, const bool develo
 	return v1 > v2;
 }
 
-QList<const Package *> cleanPackagePointerList(const QList<const Package *> packages)
+QList<PackagePointer> cleanPackagePointerList(const QList<PackagePointer> packages)
 {
 	QMap<QString, PackagePointer> out;
 
 	for (PackagePointer package : packages) {
-		const QString identifier = QString("%1#%2").arg(package->id(), package->platform());
+		const QString identifier = QString("%1#%2#%3").arg(package->id(), package->host(), package->target());
 		if (!out.contains(identifier) ||
 			isVersionHigherThan(package->version(), out[identifier]->version())) {
 			out.insert(identifier, package);
@@ -153,14 +153,13 @@ QString installerProgramForPackageManager(const QString &manager)
 }
 
 bool stringListToPackageList(PackageList *packages, const QStringList &packagesIn,
-							 QList<const Package *> &packagesOut,
-							 QStringList &alreadyInstalledPackagesOut, QString *notFoundPackage)
+							 QList<const Package *> &packagesOut, const QString &host,
+							 QStringList *alreadyInstalledPackagesOut, QString *notFoundPackage)
 {
 	PackageMatcher matcher(packages);
 	packagesOut.clear();
-	alreadyInstalledPackagesOut.clear();
 
-	// captures expressions like this: <name>[/<version>][#<platform>]
+	// captures expressions like this: <name>[/<version>][#<target>]
 	// examples: qtbase/5.0.0#win32-g++
 	//           qtjsbackend
 	//           qtpim#linux-g++-32
@@ -181,19 +180,19 @@ bool stringListToPackageList(PackageList *packages, const QStringList &packagesI
 		}
 		const QString id = match.captured(1);
 		const QString version = match.captured(2).remove(0, 1);
-		const QString platform = match.captured(3).remove(0, 1);
-		if (installed->isPackageInstalled(id, version, platform)) {
-			alreadyInstalledPackagesOut.append(arg);
+		const QString target = match.captured(3).remove(0, 1);
+		if (alreadyInstalledPackagesOut != 0 && installed->isPackageInstalled(id, version, host, target)) {
+			alreadyInstalledPackagesOut->append(arg);
 			continue;
 		}
-		packagesOut.append(matcher.matchPackages(id, version, platform));
+		packagesOut.append(matcher.matchPackages(id, version, QString(), target));
 	}
 	return true;
 }
 
-QDir installationRoot(const QString &version, const QString &platform)
+QDir installationRoot(const QString &version, const QString &host, const QString &target)
 {
-	return QDir(ConfigurationHandler::instance()->installRoot() + '/' + platform + '/' + version);
+	return QDir(ConfigurationHandler::instance()->installRoot() + '/' + host + '/' + target + '/' + version);
 }
 QDir removalScriptsDirectory()
 {
@@ -249,4 +248,10 @@ PackagePointerList removeDuplicatesFromList(const PackagePointerList &in)
 	}
 	return out;
 }
+
+QString createFriendlyName(PackagePointer package)
+{
+	return QObject::tr("%1 %2 (%3 (%4))").arg(package->id(), package->version(), package->host(), package->target());
+}
+
 }

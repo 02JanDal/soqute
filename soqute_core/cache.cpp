@@ -129,7 +129,10 @@ void Cache::addEntry(const QUrl &url, const QByteArray &data)
 }
 QString Cache::addEntry(QNetworkReply *reply)
 {
-	const QUrl url = reply->request().url();
+	QUrl url = reply->request().url();
+	if (url.scheme() == "file" && url.host().isEmpty()) {
+		url.setHost("localhost");
+	}
 	// don't write to disk if the reply is empty because it's not modified
 	addEntry(url, reply->readAll());
 

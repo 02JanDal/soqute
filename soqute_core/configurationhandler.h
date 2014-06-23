@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QUrl>
+#include <QVariant>
 
 #include "soqute_core_global.h"
 
@@ -35,6 +36,9 @@ public:
 	void setTemporaryInstallRoot(const QString &dir);
 
 	InstalledPackages *installedPackages();
+
+	void set(const QString &key, const QVariant &value);
+	QVariant get(const QString &key, const QVariant &defaultValue = QVariant()) const;
 
 private:
 	static ConfigurationHandler *m_instance;

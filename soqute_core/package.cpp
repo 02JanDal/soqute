@@ -10,16 +10,17 @@
 #include <QUrl>
 
 #include "util_core.h"
+#include "json.h"
 
 Package::Package(PackageList *list, QObject *parent) : QObject(parent), m_list(list)
 {
 }
 
-QList<const Package *> Package::recursiveDependencies() const
+QList<PackagePointer> Package::recursiveDependencies() const
 {
 	QList<const Package *> deps;
 	for (const Dependency *dep : m_dependencies) {
-		const Package *pkg = m_list->package(dep, m_platform);
+		const Package *pkg = m_list->package(dep, m_host, m_target);
 		for (PackagePointer pkgDep : pkg->recursiveDependencies()) {
 			deps.prepend(pkgDep);
 		}
@@ -36,71 +37,64 @@ Dependency::Dependency(QObject *parent) : QObject(parent)
 {
 }
 
-bool PackageList::parse(const QByteArray &data)
+void PackageList::parse(const QByteArray &data)
 {
-	// create the document and handle errors
-	QJsonParseError error;
-	QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-	if (error.error != QJsonParseError::NoError) {
-		emit parseError(error.errorString(), error.offset);
-		return false;
-	}
-
-	// it's easier to work with an variant list than json directly
-	QVariantList entities = doc.array().toVariantList();
-
-	for (const QVariant &entity : entities) {
-		QMap<QString, QVariant> map = entity.toMap();
-		Package *meta = new Package(this);
-		meta->setId(map["id"].toString());
-		meta->setDescription(map["description"].toString());
-		meta->setVersion(map["version"].toString());
-		meta->setPlatform(map["platform"].toString());
-		meta->setUrl(QUrl::fromUserInput(map["url"].toString()));
-		if (map.contains("dependencies")) {
-			QList<Dependency *> dependencies;
-			QVariantList deps = map["dependencies"].toList();
-			for (const QVariant &dep : deps) {
-				QMap<QString, QVariant> depMap = dep.toMap();
-				Dependency *dependency = new Dependency(meta);
-				dependency->setId(depMap["id"].toString());
-				dependency->setVersion(depMap["version"].toString());
-				dependencies.append(dependency);
+	try {
+		const QJsonArray root = Json::ensureArray(Json::ensureDocument(data));
+		for (const QJsonValue &val : root) {
+			const QJsonObject object = Json::ensureObject(val);
+			Package *meta = new Package(this);
+			meta->setId(Json::ensureIsType<QString>(object, "id"));
+			meta->setDescription(Json::ensureIsType<QString>(object, "description", ""));
+			meta->setVersion(Json::ensureIsType<QString>(object, "version"));
+			meta->setHost(Json::ensureIsType<QString>(object, "host", ""));
+			meta->setTarget(Json::ensureIsType<QString>(object, "target", ""));
+			meta->setUrl(Json::ensureIsType<QUrl>(object, "url", QUrl()));
+			if (object.contains("dependencies")) {
+				QList<Dependency *> dependencies;
+				const QJsonArray deps = Json::ensureArray(object, "dependencies");
+				for (const QJsonValue &dep : deps) {
+					const QJsonObject depObj = Json::ensureObject(dep);
+					Dependency *dependency = new Dependency(meta);
+					dependency->setId(Json::ensureIsType<QString>(depObj, "id"));
+					dependency->setVersion(Json::ensureIsType<QString>(depObj, "version"));
+					dependencies.append(dependency);
+				}
+				meta->setDependencies(dependencies);
 			}
-			meta->setDependencies(dependencies);
-		}
-		if (map.contains("nativeDependencies")) {
-			QMap<QString, QStringList> nativeDependencies;
-			QMap<QString, QVariant> deps = map["nativeDependencies"].toMap();
-			for (const QString &dep : deps.keys()) {
-				const QString pkgsystem = dep;
-				const QStringList ids = deps[dep].toStringList();
-				nativeDependencies.insert(pkgsystem, ids);
+			if (object.contains("nativeDependencies")) {
+				QMap<QString, QStringList> nativeDependencies;
+				const QJsonObject deps = Json::ensureObject(object, "nativeDependencies");
+				for (const QString &dep : deps.keys()) {
+					const QString pkgsystem = dep;
+					const QStringList ids = Json::ensureIsArrayOf<QString>(deps, dep);
+					nativeDependencies.insert(pkgsystem, ids);
+				}
+				meta->setNativeDependencies(nativeDependencies);
 			}
-			meta->setNativeDependencies(nativeDependencies);
+			m_entities.append(meta);
 		}
-		m_entities.append(meta);
-	}
 
-	emit entitiesChanged(m_entities);
-	return true;
+		emit entitiesChanged(m_entities);
+	} catch (Exception &e) {
+		emit parseError(e.message());
+	}
 }
 
 PackagePointer PackageList::package(const QString &id, const QString &version,
-									const QString &platform) const
+									const QString &host, const QString &target) const
 {
-	QString pltfrm = platform;
-	if (pltfrm.isNull() || pltfrm.isEmpty()) {
-		pltfrm = Util::currentPlatform();
+	QString hst = host;
+	if (hst.isEmpty()) {
+		hst = Util::currentPlatform();
 	}
 
 	const Package *result = 0;
 	for (PackagePointer entity : m_entities) {
-		// check if the id and the platform match. empty platform means any platform (most
-		// likely sources)
 		if (entity->id() == id &&
-			(entity->platform() == pltfrm || entity->platform().isEmpty())) {
-			if (version.isNull() || version.isEmpty() ||
+			(entity->host() == hst || entity->host().isEmpty()) &&
+				(entity->target() == target || entity->target().isEmpty() || target.isEmpty())) {
+			if (version.isEmpty() ||
 				(version.endsWith('+') &&
 				 Util::isVersionHigherThan(entity->version(), QString(version).remove('+')))) {
 				// check if this version is higher than the previous one
@@ -119,9 +113,9 @@ PackagePointer PackageList::package(const QString &id, const QString &version,
 	return result;
 }
 
-PackagePointer PackageList::package(const Dependency *dependency, const QString &platform) const
+PackagePointer PackageList::package(const Dependency *dependency, const QString &host, const QString &target) const
 {
-	return package(dependency->id(), dependency->version(), platform);
+	return package(dependency->id(), dependency->version(), host, target);
 }
 
 PackagePointerList PackageList::otherPackages(PackagePointer package) const
@@ -160,7 +154,9 @@ bool PackageList::matchInQueries(PackagePointer package, const QStringList &quer
 							   QRegularExpression::CaseInsensitiveOption);
 		if (exp.match(package->id()).hasMatch()) {
 			return true;
-		} else if (isPlatformString(query) && package->platform() == query) {
+		} else if (isPlatformString(query) && package->host() == query) {
+			return true;
+		} else if (isPlatformString(query) && package->target() == query) {
 			return true;
 		} else if (isVersionString(query) && package->version() == query) {
 			return true;
@@ -193,6 +189,6 @@ bool PackageList::isVersionString(const QString &string) const
 QDebug &operator<<(QDebug &d, const PackagePointer pkg)
 {
 	d.nospace() << "Package(id=" << pkg->id() << " version=" << pkg->version()
-				<< " platform=" << pkg->platform() << ")";
+				<< " host=" << pkg->host() << " target=" << pkg->target() << ")";
 	return d.space();
 }

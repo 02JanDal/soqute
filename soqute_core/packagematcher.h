@@ -13,9 +13,9 @@ public:
 	PackageMatcher(PackageList *packages);
 
 	QList<const Package *> matchPackages(const QString &name, const QString &version,
-										 const QString &platform) const;
+										 const QString &host, const QString &target) const;
 	const Package *matchSinglePackage(const QString &name, const QString &version,
-									  const QString &platform) const;
+									  const QString &host, const QString &target) const;
 
 private:
 	PackageList *m_packages;

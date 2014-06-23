@@ -198,17 +198,19 @@ public:
 	}
 	QString installPath() const
 	{
-		return Util::installationRoot(m_version, m_platform).absolutePath();
+		return Util::installationRoot(m_version, m_host, m_target).absolutePath();
 	}
-	void setData(const QString &version, const QString &platform)
+	void setData(const QString &version, const QString &host, const QString &target)
 	{
 		m_version = version;
-		m_platform = platform;
+		m_host = host;
+		m_target = target;
 	}
 
 private:
 	QString m_version;
-	QString m_platform;
+	QString m_host;
+	QString m_target;
 };
 
 JSInstaller::JSInstaller(QObject *parent)
@@ -248,7 +250,7 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	setupEngineForPackage(package);
 
 	try {
-		FS::ensureExists(Util::installationRoot(package->version(), package->platform()));
+		FS::ensureExists(Util::installationRoot(package->version(), package->host(), package->target()));
 	} catch (Exception &e) {
 		*errorString = tr("Error creating installation root directory: %1").arg(e.message());
 		emit error(*errorString);
@@ -292,8 +294,8 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	static_cast<const KArchiveFile *>(directory->entry("remove.js"))->copyTo(QDir::tempPath());
 	QDir::temp().rename(
 		"remove.js",
-		Util::removalScriptsDirectory().absoluteFilePath(QString("%1-%2-%3-remove.js").arg(
-			package->id(), package->version(), package->platform())));
+		Util::removalScriptsDirectory().absoluteFilePath(QString("%1-%2-%3-%4-remove.js").arg(
+			package->id(), package->version(), package->host(), package->target())));
 
 	delete archive;
 
@@ -371,12 +373,14 @@ void JSInstaller::setupEngineForPackage(const Package *package)
 {
 	Paths *paths =
 		qobject_cast<Paths *>(m_engine->globalObject().property("Paths").toQObject());
-	paths->setData(package->version(), package->platform());
+	paths->setData(package->version(), package->host(), package->target());
 	m_engine->globalObject().setProperty("id", m_engine->toScriptValue(package->id()));
 	m_engine->globalObject().setProperty("version",
 										 m_engine->toScriptValue(package->version()));
-	m_engine->globalObject().setProperty("platform",
-										 m_engine->toScriptValue(package->platform()));
+	m_engine->globalObject().setProperty("host",
+										 m_engine->toScriptValue(package->host()));
+	m_engine->globalObject().setProperty("target",
+										 m_engine->toScriptValue(package->target()));
 }
 
 #include "jsinstaller.moc"

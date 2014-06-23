@@ -38,16 +38,18 @@ bool isVersionHigherThan(const QString &v1, const QString &v2,
  * of each id/platform combination
  * \returns A cleaned list of packages
  */
-QList<const Package *> cleanPackagePointerList(const QList<const Package *> packages);
+QList<PackagePointer> cleanPackagePointerList(const QList<PackagePointer> packages);
+
+QString createFriendlyName(PackagePointer package);
 
 QString installerProgramForPackageManager(const QString &manager);
 
 bool stringListToPackageList(PackageList *packages, const QStringList &packagesIn,
-							 QList<const Package *> &packagesOut,
-							 QStringList &alreadyInstalledPackagesOut,
+							 QList<const Package *> &packagesOut, const QString &host,
+							 QStringList *alreadyInstalledPackagesOut,
 							 QString *notFoundPackage = 0);
 
-QDir installationRoot(const QString &version, const QString &platform);
+QDir installationRoot(const QString &version, const QString &host, const QString &target);
 QDir removalScriptsDirectory();
 
 void installArchiveEntry(const KArchiveEntry *entry, const QString &destination);

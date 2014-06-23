@@ -6,6 +6,7 @@
 #include "configurationhandler.h"
 #include "installedpackages.h"
 #include "textstream.h"
+#include "util_core.h"
 
 SearchCommand::SearchCommand(ConfigurationHandler *configHandler, PackageList *packages,
 							 QObject *parent)
@@ -25,6 +26,7 @@ void SearchCommand::setupParser()
 		QCommandLineOption(QStringList() << "d"
 										 << "matchDescription",
 						   tr("If specified, the description will be search, too")));
+	parser->addOption(QCommandLineOption("host", tr("Show packages for the <platform> instead of the current platform"), tr("platform"), Util::currentPlatform()));
 }
 
 QString padded(const QString &string, const int size, const QChar character = QChar(' '))
@@ -55,44 +57,47 @@ bool SearchCommand::executeImplementation()
 	// extract the metadata we're interested in and fill metadataMapping with it
 	QMap<QPair<QString, QString>, QPair<QString, QStringList>> metadataMapping;
 	for (auto pkg : pkgs) {
-		auto key = qMakePair(pkg->id(), pkg->platform());
-		auto existing = metadataMapping[key];
-		existing.first = pkg->description(); // in case we don't have it yet
-		existing.second.append(pkg->version());
-		metadataMapping[key] = existing;
+		if (pkg->host().isEmpty() || pkg->host() == parser->value("host"))
+		{
+			auto key = qMakePair(pkg->id(), pkg->target());
+			auto existing = metadataMapping[key];
+			existing.first = pkg->description(); // in case we don't have it yet
+			existing.second.append(pkg->version());
+			metadataMapping[key] = existing;
+		}
 	}
 
 	// calculate lengths so we know how much we need to pad
 	int longestId = 0;
 	int longestVersions = 0;
-	int longestPlatform = 0;
+	int longestTarget = 0;
 	for (auto it = metadataMapping.begin(); it != metadataMapping.end(); ++it) {
 		it.value().second.removeDuplicates();
 		longestId = qMax(longestId, it.key().first.length());
 		longestVersions = qMax(longestVersions, it.value().second.join(", ").length());
-		longestPlatform = qMax(longestPlatform, it.key().second.length());
+		longestTarget = qMax(longestTarget, it.key().second.length());
 	}
 
 	// we use a map here to sort the results by platform
 	QMultiMap<QString, QString> rows;
 	rows.insert("", QString("\E[1m I  ") + padded("ID", longestId) + "  " +
 						padded("Versions", longestVersions) + "  " +
-						padded("Platform", longestPlatform) + "  Description\E[0m");
+						padded("Target", longestTarget) + "  Description\E[0m");
 	for (auto it = metadataMapping.begin(); it != metadataMapping.end(); ++it) {
 		const QString id = it.key().first;
-		const QString platform = it.key().second;
+		const QString target = it.key().second;
 		const QString description = it.value().first;
 		const QString version = it.value().second.join(", ");
 		QString str = QString("  ") + padded(id, longestId) + "  " +
 					  padded(version, longestVersions) + "  " +
-					  padded(platform, longestPlatform) + "  " + description.split('\n')[0];
+					  padded(target, longestTarget) + "  " + description.split('\n')[0];
 		if (ConfigurationHandler::instance()->installedPackages()->isPackageInstalled(
-				id, QString(), platform)) {
+				id, QString(), QString(), target)) {
 			str = " i" + str;
 		} else {
 			str = "  " + str;
 		}
-		rows.insert(platform, str);
+		rows.insert(target, str);
 	}
 
 	for (const QString &row : rows) {
