@@ -222,8 +222,9 @@ int main(int argc, char *argv[])
 											<< "--silent"
 											<< "testpackage2/1.0.0#generic-test-platform")) {
 									installDir.refresh();
-									if (installDir.count() > 0) {
-										out << "ERROR: Installation directory is not empty (files left: " << installDir.entryList().join(", ") << ")"
+									const auto entries = installDir.entryList(QDir::NoDotAndDotDot);
+									if (entries.size() > 0) {
+										out << "ERROR: Installation directory is not empty (entries left: " << entries.join(", ") << ")"
 											<< endl << flush;
 									} else {
 										out << "SUCCESS: Removing packages" << endl << flush;
