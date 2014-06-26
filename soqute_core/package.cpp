@@ -63,12 +63,12 @@ void PackageList::parse(const QByteArray &data)
 				meta->setDependencies(dependencies);
 			}
 			if (object.contains("nativeDependencies")) {
-				QMap<QString, QStringList> nativeDependencies;
+				NativeDependencies nativeDependencies;
 				const QJsonObject deps = Json::ensureObject(object, "nativeDependencies");
 				for (const QString &dep : deps.keys()) {
-					const QString pkgsystem = dep;
-					const QStringList ids = Json::ensureIsArrayOf<QString>(deps, dep);
-					nativeDependencies.insert(pkgsystem, ids);
+					const NativeDependencies::PackageManager mngr = dep;
+					const NativeDependencies::Dependencies ids = Json::ensureIsArrayOf<QString>(deps, dep);
+					nativeDependencies.packageManagers.insert(mngr, ids);
 				}
 				meta->setNativeDependencies(nativeDependencies);
 			}

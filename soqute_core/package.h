@@ -58,9 +58,19 @@ private:
 	QString m_version;
 };
 
-// needed to put it into Q_PROPERTY
-// TODO make a QObject?
-typedef QMap<QString, QStringList> StringStringListMap;
+struct SOQUTE_CORESHARED_EXPORT NativeDependencies
+{
+	typedef QString PackageManager;
+	typedef QStringList Dependencies;
+	QMap<PackageManager, Dependencies> packageManagers;
+
+	QList<PackageManager> keys() const { return packageManagers.keys(); }
+	Dependencies operator[](const PackageManager &mngr) const { return packageManagers[mngr]; }
+	bool operator!=(const NativeDependencies &other) const
+	{
+		return packageManagers != other.packageManagers;
+	}
+};
 
 // QUESTION rename to something else? like Entity?
 class SOQUTE_CORESHARED_EXPORT Package : public QObject
@@ -76,7 +86,7 @@ class SOQUTE_CORESHARED_EXPORT Package : public QObject
 	Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
 	Q_PROPERTY(QList<Dependency *> dependencies READ dependencies WRITE setDependencies NOTIFY
 				   dependenciesChanged)
-	Q_PROPERTY(StringStringListMap nativeDependencies READ nativeDependencies WRITE
+	Q_PROPERTY(NativeDependencies nativeDependencies READ nativeDependencies WRITE
 				   setNativeDependencies NOTIFY nativeDependenciesChanged)
 
 public:
@@ -110,7 +120,7 @@ public:
 	{
 		return m_dependencies;
 	}
-	QMap<QString, QStringList> nativeDependencies() const
+	NativeDependencies nativeDependencies() const
 	{
 		return m_nativeDependencies;
 	}
@@ -125,7 +135,7 @@ signals:
 	void targetChanged(QString arg);
 	void urlChanged(QUrl arg);
 	void dependenciesChanged(QList<Dependency *> arg);
-	void nativeDependenciesChanged(QMap<QString, QStringList> arg);
+	void nativeDependenciesChanged(NativeDependencies arg);
 
 public
 slots:
@@ -179,7 +189,7 @@ slots:
 			emit dependenciesChanged(arg);
 		}
 	}
-	void setNativeDependencies(QMap<QString, QStringList> arg)
+	void setNativeDependencies(NativeDependencies arg)
 	{
 		if (m_nativeDependencies != arg) {
 			m_nativeDependencies = arg;
@@ -196,7 +206,7 @@ private:
 	QString m_target;
 	QUrl m_url;
 	QList<Dependency *> m_dependencies;
-	QMap<QString, QStringList> m_nativeDependencies;
+	NativeDependencies m_nativeDependencies;
 };
 
 Q_DECLARE_METATYPE(PackagePointer)

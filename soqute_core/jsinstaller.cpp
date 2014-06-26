@@ -223,16 +223,16 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 {
 	emit installPackageBegin(package);
 
-	// make sure we can use errorString
-	// TODO this is a hack
-	if (!errorString) {
-		errorString = new QString();
-	}
-
 	KArchive *archive = new KTar(fileName);
 	if (!archive->open(QIODevice::ReadOnly)) {
-		*errorString = tr("Couldn't open archive");
-		emit error(*errorString);
+		const QString err = tr("Couldn't open archive");
+		if (errorString) {
+			*errorString = err;
+		}
+		if (errorString) {
+			*errorString = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
@@ -241,8 +241,11 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 
 	const QStringList entries = directory->entries();
 	if (!entries.contains("install.js")) {
-		*errorString = tr("Archive does not contain installation script");
-		emit error(*errorString);
+		const QString err = tr("Archive does not contain installation script");
+		if (errorString) {
+			*errorString = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
@@ -252,8 +255,11 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	try {
 		FS::ensureExists(Util::installationRoot(package->version(), package->host(), package->target()));
 	} catch (Exception &e) {
-		*errorString = tr("Error creating installation root directory: %1").arg(e.message());
-		emit error(*errorString);
+		const QString err = tr("Error creating installation root directory: %1").arg(e.message());
+		if (errorString) {
+			*errorString = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
@@ -270,14 +276,20 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	QJSValue function = m_engine->evaluate(program, "install.js");
 
 	if (function.isError()) {
-		*errorString = tr("Error reading installation script: %1").arg(function.toString());
-		emit error(*errorString);
+		const QString err = tr("Error reading installation script: %1").arg(function.toString());
+		if (errorString) {
+			*errorString = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
 	if (!m_errors.isEmpty()) {
-		*errorString = tr("Error executing installation script: %1").arg(m_errors.join(", "));
-		emit error(*errorString);
+		const QString err = tr("Error executing installation script: %1").arg(m_errors.join(", "));
+		if (errorString) {
+			*errorString = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
@@ -285,8 +297,11 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	try {
 		FS::ensureExists(Util::removalScriptsDirectory());
 	} catch (Exception &e) {
-		*errorString = tr("Error creating removal scripts directory: %1").arg(e.message());
-		emit error(*errorString);
+		const QString err = tr("Error creating removal scripts directory: %1").arg(e.message());
+		if (errorString) {
+			*errorString = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
@@ -308,16 +323,13 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 {
 	emit removePackageBegin(package);
 
-	// make sure we can use errorString
-	// TODO this is a hack
-	if (!errorString) {
-		errorString = new QString();
-	}
-
 	QFile file(fileName);
 	if (!file.open(QFile::ReadOnly)) {
-		*errorString = tr("Unable to open removal script: %1").arg(file.errorString());
-		emit error(*errorString);
+		const QString err = tr("Unable to open removal script: %1").arg(file.errorString());
+		if (errorString) {
+			const QString err = err;
+		}
+		emit error(err);
 		exit(1);
 		return;
 	}
@@ -329,8 +341,11 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 	QJSValue function = m_engine->evaluate(QString::fromUtf8(file.readAll()), fileName);
 
 	if (function.isError()) {
-		*errorString = tr("Error reading removal script: %1").arg(function.toString());
-		emit error(*errorString);
+		const QString err = tr("Error reading removal script: %1").arg(function.toString());
+		if (errorString) {
+			const QString err = err;
+		}
+		emit error(err);
 		emit message(
 			tr("Warning: Because the removal of the package failed might now be broken, and "
 			   "you might want to reinstall it."));
@@ -339,8 +354,11 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 	}
 
 	if (!m_errors.isEmpty()) {
-		*errorString = tr("Error executing removal script: %1").arg(m_errors.join(", "));
-		emit error(*errorString);
+		const QString err = tr("Error executing removal script: %1").arg(m_errors.join(", "));
+		if (errorString) {
+			const QString err = err;
+		}
+		emit error(err);
 		emit message(
 			tr("Warning: Because the removal of the package failed it might now be broken, and "
 			   "you might want to reinstall it."));
