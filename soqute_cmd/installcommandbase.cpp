@@ -44,6 +44,9 @@ void InstallCommandBase::constructPackageList(const QStringList cliPackages)
 			throw Exception(
 				tr("The following package could not be found: %1").arg(notFoundPackage));
 		}
+		if (!alreadyInstalledPackagesOut.isEmpty()) {
+			out << "The following packages are already installed: " << Util::niceJoin(alreadyInstalledPackagesOut) << endl;
+		}
 	}
 
 	// dependency calculation
