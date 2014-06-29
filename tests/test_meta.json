@@ -22,7 +22,7 @@
 			"compiler": "platform"
 		},
 		"version" : "1.0.0",
-		"url" : "file:///home/jan/projects/soqute/tester/packages/package1.tar.gz"
+		"url" : "file:///home/jan/projects/soqute/tests/packages/package1.tar.gz"
 	},
 	{
 		"id" : "testpackage2",
@@ -33,6 +33,6 @@
 			"compiler": "platform"
 		},
 		"version" : "1.0.0",
-		"url" : "file:///home/jan/projects/soqute/tester/packages/package2.tar.gz"
+		"url" : "file:///home/jan/projects/soqute/tests/packages/package2.tar.gz"
 	}
 ]
