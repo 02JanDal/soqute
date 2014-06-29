@@ -59,9 +59,8 @@ Q_DECLARE_METATYPE(Platform)
 class SOQUTE_CORESHARED_EXPORT Dependency : public QObject
 {
 	Q_OBJECT
-
-	Q_PROPERTY(QString id READ id WRITE setId NOTIFY idChanged)
-	Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
+	Q_PROPERTY(QString id READ id CONSTANT)
+	Q_PROPERTY(QString version READ version CONSTANT)
 
 public:
 	Dependency(QObject *parent = 0);
@@ -75,28 +74,8 @@ public:
 		return m_version;
 	}
 
-signals:
-	void idChanged(QString arg);
-	void versionChanged(QString arg);
-
-public
-slots:
-	void setId(QString arg)
-	{
-		if (m_id != arg) {
-			m_id = arg;
-			emit idChanged(arg);
-		}
-	}
-	void setVersion(QString arg)
-	{
-		if (m_version != arg) {
-			m_version = arg;
-			emit versionChanged(arg);
-		}
-	}
-
 private:
+	friend class PackageList;
 	QString m_id;
 	QString m_version;
 };
@@ -120,17 +99,14 @@ class SOQUTE_CORESHARED_EXPORT Package : public QObject
 {
 	Q_OBJECT
 
-	Q_PROPERTY(QString id READ id WRITE setId NOTIFY idChanged)
-	Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY
-				   descriptionChanged)
-	Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
-	Q_PROPERTY(Platform host READ host WRITE setHost NOTIFY hostChanged)
-	Q_PROPERTY(Platform target READ target WRITE setTarget NOTIFY targetChanged)
-	Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-	Q_PROPERTY(QList<Dependency *> dependencies READ dependencies WRITE setDependencies NOTIFY
-				   dependenciesChanged)
-	Q_PROPERTY(NativeDependencies nativeDependencies READ nativeDependencies WRITE
-				   setNativeDependencies NOTIFY nativeDependenciesChanged)
+	Q_PROPERTY(QString id READ id CONSTANT)
+	Q_PROPERTY(QString description READ description CONSTANT)
+	Q_PROPERTY(QString version READ version CONSTANT)
+	Q_PROPERTY(Platform host READ host CONSTANT)
+	Q_PROPERTY(Platform target READ target CONSTANT)
+	Q_PROPERTY(QUrl url READ url CONSTANT)
+	Q_PROPERTY(QList<Dependency *> dependencies READ dependencies CONSTANT)
+	Q_PROPERTY(NativeDependencies nativeDependencies READ nativeDependencies CONSTANT)
 
 public:
 	explicit Package(PackageList *list, QObject *parent = 0);
@@ -170,77 +146,9 @@ public:
 
 	QList<PackagePointer> recursiveDependencies() const;
 
-signals:
-	void idChanged(QString arg);
-	void descriptionChanged(QString arg);
-	void versionChanged(QString arg);
-	void hostChanged(Platform arg);
-	void targetChanged(Platform arg);
-	void urlChanged(QUrl arg);
-	void dependenciesChanged(QList<Dependency *> arg);
-	void nativeDependenciesChanged(NativeDependencies arg);
-
-public
-slots:
-	void setId(QString arg)
-	{
-		if (m_id != arg) {
-			m_id = arg;
-			emit idChanged(arg);
-		}
-	}
-	void setDescription(QString arg)
-	{
-		if (m_description != arg) {
-			m_description = arg;
-			emit descriptionChanged(arg);
-		}
-	}
-	void setVersion(QString arg)
-	{
-		if (m_version != arg) {
-			m_version = arg;
-			emit versionChanged(arg);
-		}
-	}
-	void setHost(Platform arg)
-	{
-		if (m_host != arg) {
-			m_host = arg;
-			emit hostChanged(arg);
-		}
-	}
-	void setTarget(Platform arg)
-	{
-		if (m_target != arg) {
-			m_target = arg;
-			emit targetChanged(arg);
-		}
-	}
-
-	void setUrl(QUrl arg)
-	{
-		if (m_url != arg) {
-			m_url = arg;
-			emit urlChanged(arg);
-		}
-	}
-	void setDependencies(QList<Dependency *> arg)
-	{
-		if (m_dependencies != arg) {
-			m_dependencies = arg;
-			emit dependenciesChanged(arg);
-		}
-	}
-	void setNativeDependencies(NativeDependencies arg)
-	{
-		if (m_nativeDependencies != arg) {
-			m_nativeDependencies = arg;
-			emit nativeDependenciesChanged(arg);
-		}
-	}
-
 private:
+	friend class PackageList;
+
 	PackageList *m_list;
 	QString m_id;
 	QString m_description;

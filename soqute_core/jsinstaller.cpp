@@ -100,8 +100,8 @@ slots:
 class OperatingSystem : public JSObject
 {
 	Q_OBJECT
-	Q_PROPERTY(int processor READ processor)
-	Q_PROPERTY(QString os READ os)
+	Q_PROPERTY(int processor READ processor CONSTANT)
+	Q_PROPERTY(QString os READ os CONSTANT)
 public:
 	OperatingSystem(JSInstaller *installer, QJSEngine *engine) : JSObject(installer, engine)
 	{
@@ -122,10 +122,12 @@ public:
 	QString os() const
 	{
 		return
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 			"linux"
 #elif defined(Q_OS_WIN32)
 			"win32"
+#elif defined(Q_OS_OSX)
+			"osx"
 #else
 #error Your operating system is not supported
 #endif

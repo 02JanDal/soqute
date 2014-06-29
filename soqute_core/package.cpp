@@ -44,16 +44,16 @@ void PackageList::parse(const QByteArray &data)
 		for (const QJsonValue &val : root) {
 			const QJsonObject object = Json::ensureObject(val);
 			Package *meta = new Package(this);
-			meta->setId(Json::ensureIsType<QString>(object, "id"));
-			meta->setDescription(Json::ensureIsType<QString>(object, "description", ""));
-			meta->setVersion(Json::ensureIsType<QString>(object, "version"));
+			meta->m_id = Json::ensureIsType<QString>(object, "id");
+			meta->m_description = Json::ensureIsType<QString>(object, "description", "");
+			meta->m_version = Json::ensureIsType<QString>(object, "version");
 			if (object.contains("host")) {
 				Platform host;
 				const QJsonObject hostObj = Json::ensureObject(object, "host");
 				host.os = Json::ensureIsType<QString>(hostObj, "os");
 				host.arch = Json::ensureIsType<QString>(hostObj, "arch");
 				host.compiler = Json::ensureIsType<QString>(hostObj, "compiler");
-				meta->setHost(host);
+				meta->m_host = host;
 			}
 			if (object.contains("target")) {
 				Platform target;
@@ -61,20 +61,20 @@ void PackageList::parse(const QByteArray &data)
 				target.os = Json::ensureIsType<QString>(targetObj, "os");
 				target.arch = Json::ensureIsType<QString>(targetObj, "arch");
 				target.compiler = Json::ensureIsType<QString>(targetObj, "compiler");
-				meta->setTarget(target);
+				meta->m_target = target;
 			}
-			meta->setUrl(Json::ensureIsType<QUrl>(object, "url", QUrl()));
+			meta->m_url = Json::ensureIsType<QUrl>(object, "url", QUrl());
 			if (object.contains("dependencies")) {
 				QList<Dependency *> dependencies;
 				const QJsonArray deps = Json::ensureArray(object, "dependencies");
 				for (const QJsonValue &dep : deps) {
 					const QJsonObject depObj = Json::ensureObject(dep);
 					Dependency *dependency = new Dependency(meta);
-					dependency->setId(Json::ensureIsType<QString>(depObj, "id"));
-					dependency->setVersion(Json::ensureIsType<QString>(depObj, "version"));
+					dependency->m_id = Json::ensureIsType<QString>(depObj, "id");
+					dependency->m_version = Json::ensureIsType<QString>(depObj, "version");
 					dependencies.append(dependency);
 				}
-				meta->setDependencies(dependencies);
+				meta->m_dependencies = dependencies;
 			}
 			if (object.contains("nativeDependencies")) {
 				NativeDependencies nativeDependencies;
@@ -84,7 +84,7 @@ void PackageList::parse(const QByteArray &data)
 					const NativeDependencies::Dependencies ids = Json::ensureIsArrayOf<QString>(deps, dep);
 					nativeDependencies.packageManagers.insert(mngr, ids);
 				}
-				meta->setNativeDependencies(nativeDependencies);
+				meta->m_nativeDependencies = nativeDependencies;
 			}
 			m_entities.append(meta);
 		}
