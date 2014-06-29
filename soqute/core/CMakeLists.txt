@@ -23,23 +23,15 @@ set(SRCS
     jsinstaller.cpp
     remover.h
     remover.cpp
-    json.h
-    json.cpp
-    filesystem.h
-    filesystem.cpp
     cache.h
     cache.cpp
-    exception.h
-    actor.h
-    actor.cpp
 )
 
 include_directories(${KARCHIVE_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/common)
 
 add_definitions(-DSOQUTE_CORE_LIBRARY)
 
 add_library(soqute_core SHARED ${SRCS})
 qt5_use_modules(soqute_core Core Network Qml)
-target_link_libraries(soqute_core karchive)
-
-add_custom_target(ide_extra_files SOURCES ../status.txt)
+target_link_libraries(soqute_core karchive common_lib)

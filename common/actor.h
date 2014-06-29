@@ -5,15 +5,13 @@
 #include <QQueue>
 #include <QVariant>
 
-#include "soqute_core_global.h"
-
 /**
  * \brief The Actor class provides a common base for classes that need to have error/status
  *        reporting, and that can finish.
  *
  * It provides functions/signals for both blocking and non-blocking usage
  */
-class SOQUTE_CORESHARED_EXPORT Actor : public QObject
+class Actor : public QObject
 {
 	Q_OBJECT
 public:

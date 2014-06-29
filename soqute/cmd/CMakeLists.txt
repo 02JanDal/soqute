@@ -25,7 +25,8 @@ set(SRCS
     buildsystemcommand.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/soqute_core)
+include_directories(${CMAKE_SOURCE_DIR}/soqute/core)
+include_directories(${CMAKE_SOURCE_DIR}/common)
 
 add_executable(soqute_cmd ${SRCS})
 qt5_use_modules(soqute_cmd Core Network)

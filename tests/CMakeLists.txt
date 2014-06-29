@@ -27,7 +27,7 @@ endfunction()
 add_unit_test(NAME blackbox_install_remove)
 add_unit_test(NAME util_core LINK_TO_CORE)
 
-include_directories(${CMAKE_SOURCE_DIR}/soqute_core)
+include_directories(${CMAKE_SOURCE_DIR}/soqute/core)
 
 file(GLOB_RECURSE test_packages packages/*)
 add_custom_target(tester_copy_data
