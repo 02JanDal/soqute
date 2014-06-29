@@ -6,7 +6,7 @@ class QSettings;
 
 class PackageList;
 class Package;
-class Platform;
+struct Platform;
 typedef const Package *PackagePointer;
 
 class InstalledPackages : public QObject

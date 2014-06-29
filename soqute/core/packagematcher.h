@@ -6,7 +6,7 @@
 
 class PackageList;
 class Package;
-class Platform;
+struct Platform;
 
 class SOQUTE_CORESHARED_EXPORT PackageMatcher
 {

@@ -3,7 +3,7 @@
 template <typename T> class QList;
 class Package;
 class PackageList;
-class Platform;
+struct Platform;
 typedef const Package *PackagePointer;
 typedef QList<PackagePointer> PackagePointerList;
 class QStringList;

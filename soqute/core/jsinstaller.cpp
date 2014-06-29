@@ -329,7 +329,7 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 	if (!file.open(QFile::ReadOnly)) {
 		const QString err = tr("Unable to open removal script: %1").arg(file.errorString());
 		if (errorString) {
-			const QString err = err;
+			*errorString = err;
 		}
 		emit error(err);
 		exit(1);
@@ -345,7 +345,7 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 	if (function.isError()) {
 		const QString err = tr("Error reading removal script: %1").arg(function.toString());
 		if (errorString) {
-			const QString err = err;
+			*errorString = err;
 		}
 		emit error(err);
 		emit message(
@@ -358,7 +358,7 @@ void JSInstaller::remove(const Package *package, const QString &fileName, QStrin
 	if (!m_errors.isEmpty()) {
 		const QString err = tr("Error executing removal script: %1").arg(m_errors.join(", "));
 		if (errorString) {
-			const QString err = err;
+			*errorString = err;
 		}
 		emit error(err);
 		emit message(

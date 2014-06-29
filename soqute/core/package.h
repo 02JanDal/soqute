@@ -34,10 +34,6 @@ struct SOQUTE_CORESHARED_EXPORT Platform
 	}
 	bool fuzzyCompare(const Platform &other) const
 	{
-		auto fuzzyCompareString = [](const QString &str1, const QString &str2)
-		{
-			return str1 == str2 || str1.isEmpty() || str2.isEmpty() || str1 == "*" || str2 == "*";
-		};
 		return fuzzyCompareString(os, other.os) && fuzzyCompareString(arch, other.arch) && fuzzyCompareString(compiler, other.compiler);
 	}
 	bool isEmpty() const
@@ -49,6 +45,12 @@ struct SOQUTE_CORESHARED_EXPORT Platform
 		return os + '-' + arch + '-' + compiler;
 	}
 	static Platform fromString(const QString &string);
+
+private:
+	static inline bool fuzzyCompareString(const QString &str1, const QString &str2)
+	{
+		return str1 == str2 || str1.isEmpty() || str2.isEmpty() || str1 == "*" || str2 == "*";
+	}
 };
 inline uint SOQUTE_CORESHARED_EXPORT qHash(const Platform &platform)
 {
