@@ -32,7 +32,7 @@ void ShowCommand::setupParser()
 		QStringList() << "nativeDependencies",
 		tr("Only outputs the native packages for piping to the package manager"),
 		tr("package-manager"), configHandler->packageManager()));
-	parser->addOption(QCommandLineOption("host", tr("Show packages for the <platform> instead of the current platform"), tr("platform"), Util::currentPlatform()));
+	parser->addOption(QCommandLineOption("host", tr("Show packages for the <platform> instead of the current platform"), tr("platform"), Util::currentPlatform().toString()));
 }
 
 bool ShowCommand::executeImplementation()
@@ -43,7 +43,7 @@ bool ShowCommand::executeImplementation()
 	}
 
 	QList<PackagePointer> pkgs;
-	if (!Util::stringListToPackageList(packages, QStringList() << parser->positionalArguments()[0], pkgs, parser->value("host"), 0)) {
+	if (!Util::stringListToPackageList(packages, QStringList() << parser->positionalArguments()[0], pkgs, Platform::fromString(parser->value("host")), 0)) {
 		out << "Invalid package identifier given" << endl;
 		return false;
 	}
@@ -61,11 +61,11 @@ bool ShowCommand::executeImplementation()
 		QStringList allTargets;
 		QStringList allVersions;
 		for (PackagePointer pkg : others) {
-			allTargets.append(pkg->target());
+			allTargets.append(pkg->target().toString());
 			allVersions.append(pkg->version());
 		}
 		allTargets.removeDuplicates();
-		allTargets.removeAll(package->target());
+		allTargets.removeAll(package->target().toString());
 		allVersions.removeDuplicates();
 		allVersions.removeAll(package->version());
 
@@ -79,7 +79,7 @@ bool ShowCommand::executeImplementation()
 			<< "Description:         " << package->description() << endl
 			<< "Version:             " << package->version() << endl
 			<< "Other versions:      " << allVersions.join(", ") << endl
-			<< "Target:              " << package->target() << endl
+			<< "Target:              " << package->target().toString() << endl
 			<< "Other targets:       " << allTargets.join(", ") << endl
 			<< "Dependencies:        ";
 		for (PackagePointer p : package->recursiveDependencies()) {

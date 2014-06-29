@@ -6,6 +6,7 @@ class QSettings;
 
 class PackageList;
 class Package;
+class Platform;
 typedef const Package *PackagePointer;
 
 class InstalledPackages : public QObject
@@ -14,7 +15,7 @@ class InstalledPackages : public QObject
 public:
 	explicit InstalledPackages(QSettings *settings, QObject *parent = 0);
 
-	bool isPackageInstalled(const QString &id, const QString &version, const QString &host, const QString &target) const;
+	bool isPackageInstalled(const QString &id, const QString &version, const Platform &host, const Platform &target) const;
 	bool isPackageInstalled(PackagePointer package) const;
 	void setPackageInstalled(PackagePointer package);
 	void setPackageUninstalled(PackagePointer package);

@@ -2,7 +2,11 @@
 	{
 		"id" : "testpackage",
 		"description" : "description for the test package",
-		"target" : "generic-test-platform",
+		"target": {
+			"os": "generic",
+			"arch": "test",
+			"compiler": "platform"
+		},
 		"version" : "1.0.0",
 		"dependencies" :[
 			{"id" : "testpackage1", "version" : "1.0.0"},
@@ -12,14 +16,22 @@
 	{
 		"id" : "testpackage1",
 		"description" : "description for test package 1",
-		"target" : "generic-test-platform",
+		"target": {
+			"os": "generic",
+			"arch": "test",
+			"compiler": "platform"
+		},
 		"version" : "1.0.0",
 		"url" : "file:///home/jan/projects/soqute/tester/packages/package1.tar.gz"
 	},
 	{
 		"id" : "testpackage2",
 		"description" : "description for test package 2",
-		"target" : "generic-test-platform",
+		"target": {
+			"os": "generic",
+			"arch": "test",
+			"compiler": "platform"
+		},
 		"version" : "1.0.0",
 		"url" : "file:///home/jan/projects/soqute/tester/packages/package2.tar.gz"
 	}

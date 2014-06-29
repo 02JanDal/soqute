@@ -187,9 +187,7 @@ int main(int argc, char *argv[])
 											   << "--silent"
 											   << "testpackage/1.0.0#generic-test-platform")) {
 
-				QDir installDir(dir);
-				installDir.cd("generic-test-platform");
-				installDir.cd("1.0.0");
+				QDir installDir(dir.absolutePath() + "/--/generic-test-platform/1.0.0");
 				installDir.refresh();
 				if (!installDir.exists()) {
 					out << "ERROR: Root install directory was not created" << endl << flush;

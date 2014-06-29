@@ -198,9 +198,9 @@ public:
 	}
 	QString installPath() const
 	{
-		return Util::installationRoot(m_version, m_host, m_target).absolutePath();
+		return Util::installationRoot(m_version, m_host.toString(), m_target.toString()).absolutePath();
 	}
-	void setData(const QString &version, const QString &host, const QString &target)
+	void setData(const QString &version, const Platform &host, const Platform &target)
 	{
 		m_version = version;
 		m_host = host;
@@ -209,8 +209,8 @@ public:
 
 private:
 	QString m_version;
-	QString m_host;
-	QString m_target;
+	Platform m_host;
+	Platform m_target;
 };
 
 JSInstaller::JSInstaller(QObject *parent)
@@ -253,7 +253,7 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	setupEngineForPackage(package);
 
 	try {
-		FS::ensureExists(Util::installationRoot(package->version(), package->host(), package->target()));
+		FS::ensureExists(Util::installationRoot(package->version(), package->host().toString(), package->target().toString()));
 	} catch (Exception &e) {
 		const QString err = tr("Error creating installation root directory: %1").arg(e.message());
 		if (errorString) {
@@ -310,7 +310,7 @@ void JSInstaller::install(const Package *package, const QString &fileName, QStri
 	QDir::temp().rename(
 		"remove.js",
 		Util::removalScriptsDirectory().absoluteFilePath(QString("%1-%2-%3-%4-remove.js").arg(
-			package->id(), package->version(), package->host(), package->target())));
+			package->id(), package->version(), package->host().toString(), package->target().toString())));
 
 	delete archive;
 

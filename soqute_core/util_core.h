@@ -3,6 +3,7 @@
 template <typename T> class QList;
 class Package;
 class PackageList;
+class Platform;
 typedef const Package *PackagePointer;
 typedef QList<PackagePointer> PackagePointerList;
 class QStringList;
@@ -23,7 +24,7 @@ QString defaultPackageManager();
  * \returns The platform string of this platform
  * Examples: linux-g++-64, linux-g++-32, macx-g++, win32-msvc2010
  */
-QString currentPlatform();
+Platform currentPlatform();
 
 /**
  * \param developerMode If true alpha, beta and rc versions will be matched higher than a stable
@@ -45,7 +46,7 @@ QString createFriendlyName(PackagePointer package);
 QString installerProgramForPackageManager(const QString &manager);
 
 bool stringListToPackageList(PackageList *packages, const QStringList &packagesIn,
-							 QList<const Package *> &packagesOut, const QString &host,
+							 QList<const Package *> &packagesOut, const Platform &host,
 							 QStringList *alreadyInstalledPackagesOut,
 							 QString *notFoundPackage = 0);
 

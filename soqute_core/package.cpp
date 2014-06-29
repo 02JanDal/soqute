@@ -47,8 +47,22 @@ void PackageList::parse(const QByteArray &data)
 			meta->setId(Json::ensureIsType<QString>(object, "id"));
 			meta->setDescription(Json::ensureIsType<QString>(object, "description", ""));
 			meta->setVersion(Json::ensureIsType<QString>(object, "version"));
-			meta->setHost(Json::ensureIsType<QString>(object, "host", ""));
-			meta->setTarget(Json::ensureIsType<QString>(object, "target", ""));
+			if (object.contains("host")) {
+				Platform host;
+				const QJsonObject hostObj = Json::ensureObject(object, "host");
+				host.os = Json::ensureIsType<QString>(hostObj, "os");
+				host.arch = Json::ensureIsType<QString>(hostObj, "arch");
+				host.compiler = Json::ensureIsType<QString>(hostObj, "compiler");
+				meta->setHost(host);
+			}
+			if (object.contains("target")) {
+				Platform target;
+				const QJsonObject targetObj = Json::ensureObject(object, "target");
+				target.os = Json::ensureIsType<QString>(targetObj, "os");
+				target.arch = Json::ensureIsType<QString>(targetObj, "arch");
+				target.compiler = Json::ensureIsType<QString>(targetObj, "compiler");
+				meta->setTarget(target);
+			}
 			meta->setUrl(Json::ensureIsType<QUrl>(object, "url", QUrl()));
 			if (object.contains("dependencies")) {
 				QList<Dependency *> dependencies;
@@ -82,18 +96,16 @@ void PackageList::parse(const QByteArray &data)
 }
 
 PackagePointer PackageList::package(const QString &id, const QString &version,
-									const QString &host, const QString &target) const
+									const Platform &host, const Platform &target) const
 {
-	QString hst = host;
+	Platform hst = host;
 	if (hst.isEmpty()) {
 		hst = Util::currentPlatform();
 	}
 
 	const Package *result = 0;
 	for (PackagePointer entity : m_entities) {
-		if (entity->id() == id &&
-			(entity->host() == hst || entity->host().isEmpty()) &&
-				(entity->target() == target || entity->target().isEmpty() || target.isEmpty())) {
+		if (entity->id() == id && entity->host().fuzzyCompare(hst) && entity->target().fuzzyCompare(target)) {
 			if (version.isEmpty() ||
 				(version.endsWith('+') &&
 				 Util::isVersionHigherThan(entity->version(), QString(version).remove('+')))) {
@@ -113,7 +125,7 @@ PackagePointer PackageList::package(const QString &id, const QString &version,
 	return result;
 }
 
-PackagePointer PackageList::package(const Dependency *dependency, const QString &host, const QString &target) const
+PackagePointer PackageList::package(const Dependency *dependency, const Platform &host, const Platform &target) const
 {
 	return package(dependency->id(), dependency->version(), host, target);
 }
@@ -154,9 +166,9 @@ bool PackageList::matchInQueries(PackagePointer package, const QStringList &quer
 							   QRegularExpression::CaseInsensitiveOption);
 		if (exp.match(package->id()).hasMatch()) {
 			return true;
-		} else if (isPlatformString(query) && package->host() == query) {
+		} else if (isPlatformString(query) && package->host().fuzzyCompare(Platform::fromString(query))) {
 			return true;
-		} else if (isPlatformString(query) && package->target() == query) {
+		} else if (isPlatformString(query) && package->target().fuzzyCompare(Platform::fromString(query))) {
 			return true;
 		} else if (isVersionString(query) && package->version() == query) {
 			return true;
@@ -186,9 +198,21 @@ bool PackageList::isVersionString(const QString &string) const
 	return exp.match(string).hasMatch();
 }
 
+QDebug &operator<<(QDebug &d, const Platform pkg)
+{
+	d.nospace() << "Platform(os=" << pkg.os << " arch=" << pkg.arch << " compiler=" << pkg.compiler << ")";
+	return d.space();
+}
 QDebug &operator<<(QDebug &d, const PackagePointer pkg)
 {
 	d.nospace() << "Package(id=" << pkg->id() << " version=" << pkg->version()
 				<< " host=" << pkg->host() << " target=" << pkg->target() << ")";
 	return d.space();
+}
+
+Platform Platform::fromString(const QString &string)
+{
+	QRegularExpression exp("(.*)\\-(.*)\\-(.*)");
+	QRegularExpressionMatch match = exp.match(string);
+	return Platform(match.captured(1), match.captured(2), match.captured(3));
 }

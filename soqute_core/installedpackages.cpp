@@ -11,10 +11,10 @@ InstalledPackages::InstalledPackages(QSettings *settings, QObject *parent)
 {
 }
 
-bool InstalledPackages::isPackageInstalled(const QString &id, const QString &version, const QString &host, const QString &target) const
+bool InstalledPackages::isPackageInstalled(const QString &id, const QString &version, const Platform &host, const Platform &target) const
 {
 	// TODO version.isNull() should match all versions
-	const QString key = generateKey(id, version, host, target);
+	const QString key = generateKey(id, version, host.toString(), target.toString());
 	return m_settings->allKeys().contains(key) && m_settings->value(key).toBool();
 }
 
@@ -48,7 +48,7 @@ QList<const Package *> InstalledPackages::installedPackages(PackageList *package
 			for (const QString &target : m_settings->childGroups()) {
 				m_settings->beginGroup(target);
 				for (const QString &version : m_settings->childKeys()) {
-					out.append(packages->package(id, version, host, target));
+					out.append(packages->package(id, version, Platform::fromString(host), Platform::fromString(target)));
 				}
 				m_settings->endGroup();
 			}
@@ -70,19 +70,19 @@ bool InstalledPackages::isNewestInstalled(PackagePointer package)
 		return false;
 	}
 	m_settings->beginGroup(package->id());
-	if (!m_settings->childGroups().contains(package->host())) {
+	if (!m_settings->childGroups().contains(package->host().toString())) {
 		m_settings->endGroup();
 		m_settings->endGroup();
 		return false;
 	}
-	m_settings->beginGroup(package->host());
-	if (!m_settings->childGroups().contains(package->target())) {
+	m_settings->beginGroup(package->host().toString());
+	if (!m_settings->childGroups().contains(package->target().toString())) {
 		m_settings->endGroup();
 		m_settings->endGroup();
 		m_settings->endGroup();
 		return false;
 	}
-	m_settings->beginGroup(package->target());
+	m_settings->beginGroup(package->target().toString());
 	QStringList installedVersions = m_settings->childKeys();
 	for (const QString &installedVersion : installedVersions) {
 		if (Util::isVersionHigherThan(installedVersion, package->version())) {
@@ -102,8 +102,7 @@ bool InstalledPackages::isNewestInstalled(PackagePointer package)
 
 const QString InstalledPackages::generateKey(PackagePointer pkg) const
 {
-	return generateKey(pkg->id(), pkg->version(), pkg->host(), pkg->target());
-	return QString("InstalledPackages/%1/%2/%3/%4").arg(pkg->id(), pkg->host(), pkg->target(), pkg->version());
+	return generateKey(pkg->id(), pkg->version(), pkg->host().toString(), pkg->target().toString());
 }
 const QString InstalledPackages::generateKey(const QString &id, const QString &version,
 											 const QString &host, const QString &target) const

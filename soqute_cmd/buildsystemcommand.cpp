@@ -22,7 +22,7 @@ void BuildsystemCommand::setupParser()
 	parser->addHelpOption();
 	parser->addOption(QCommandLineOption(
 		"defaultplatform", tr("Default platform if no other is given. Empty means current."),
-		tr("platform"), Util::currentPlatform()));
+		tr("platform"), Util::currentPlatform().toString()));
 	parser->addOption(QCommandLineOption(
 		"defaultversion", tr("Default version if no other is given. Empty means latest."),
 		tr("version"), ""));

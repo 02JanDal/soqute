@@ -13,6 +13,49 @@ class PackageList;
 typedef const Package *PackagePointer;
 typedef QList<PackagePointer> PackagePointerList;
 
+struct SOQUTE_CORESHARED_EXPORT Platform
+{
+	Platform(const QString &os, const QString &arch, const QString &compiler) : os(os), arch(arch), compiler(compiler) {}
+	Platform() {}
+	QString os;
+	QString arch;
+	QString compiler;
+	bool operator==(const Platform &other) const
+	{
+		return os == other.os && arch == other.arch && compiler == other.compiler;
+	}
+	bool operator!=(const Platform &other) const
+	{
+		return !operator==(other);
+	}
+	bool operator<(const Platform &other) const
+	{
+		return (os + arch + compiler) < (other.os + other.arch + other.compiler);
+	}
+	bool fuzzyCompare(const Platform &other) const
+	{
+		auto fuzzyCompareString = [](const QString &str1, const QString &str2)
+		{
+			return str1 == str2 || str1.isEmpty() || str2.isEmpty() || str1 == "*" || str2 == "*";
+		};
+		return fuzzyCompareString(os, other.os) && fuzzyCompareString(arch, other.arch) && fuzzyCompareString(compiler, other.compiler);
+	}
+	bool isEmpty() const
+	{
+		return os.isEmpty() && arch.isEmpty() && compiler.isEmpty();
+	}
+	QString toString() const
+	{
+		return os + '-' + arch + '-' + compiler;
+	}
+	static Platform fromString(const QString &string);
+};
+inline uint SOQUTE_CORESHARED_EXPORT qHash(const Platform &platform)
+{
+	return qHash(platform.os + platform.arch + platform.compiler);
+}
+Q_DECLARE_METATYPE(Platform)
+
 class SOQUTE_CORESHARED_EXPORT Dependency : public QObject
 {
 	Q_OBJECT
@@ -81,8 +124,8 @@ class SOQUTE_CORESHARED_EXPORT Package : public QObject
 	Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY
 				   descriptionChanged)
 	Q_PROPERTY(QString version READ version WRITE setVersion NOTIFY versionChanged)
-	Q_PROPERTY(QString host READ host WRITE setHost NOTIFY hostChanged)
-	Q_PROPERTY(QString target READ target WRITE setTarget NOTIFY targetChanged)
+	Q_PROPERTY(Platform host READ host WRITE setHost NOTIFY hostChanged)
+	Q_PROPERTY(Platform target READ target WRITE setTarget NOTIFY targetChanged)
 	Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
 	Q_PROPERTY(QList<Dependency *> dependencies READ dependencies WRITE setDependencies NOTIFY
 				   dependenciesChanged)
@@ -104,11 +147,11 @@ public:
 	{
 		return m_version;
 	}
-	QString host() const
+	Platform host() const
 	{
 		return m_host;
 	}
-	QString target() const
+	Platform target() const
 	{
 		return m_target;
 	}
@@ -131,8 +174,8 @@ signals:
 	void idChanged(QString arg);
 	void descriptionChanged(QString arg);
 	void versionChanged(QString arg);
-	void hostChanged(QString arg);
-	void targetChanged(QString arg);
+	void hostChanged(Platform arg);
+	void targetChanged(Platform arg);
 	void urlChanged(QUrl arg);
 	void dependenciesChanged(QList<Dependency *> arg);
 	void nativeDependenciesChanged(NativeDependencies arg);
@@ -160,14 +203,14 @@ slots:
 			emit versionChanged(arg);
 		}
 	}
-	void setHost(QString arg)
+	void setHost(Platform arg)
 	{
 		if (m_host != arg) {
 			m_host = arg;
 			emit hostChanged(arg);
 		}
 	}
-	void setTarget(QString arg)
+	void setTarget(Platform arg)
 	{
 		if (m_target != arg) {
 			m_target = arg;
@@ -202,8 +245,8 @@ private:
 	QString m_id;
 	QString m_description;
 	QString m_version;
-	QString m_host;
-	QString m_target;
+	Platform m_host;
+	Platform m_target;
 	QUrl m_url;
 	QList<Dependency *> m_dependencies;
 	NativeDependencies m_nativeDependencies;
@@ -232,12 +275,12 @@ public:
 	 * platform and id supplied
 	 */
 	PackagePointer package(const QString &id, const QString &version = QString(),
-						   const QString &host = QString(), const QString &target = QString()) const;
+						   const Platform &host = Platform(), const Platform &target = Platform()) const;
 
 	/**
 	 * \returns The package associated with the dependency, or null if no such package exists
 	 */
-	PackagePointer package(const Dependency *dependency, const QString &host, const QString &target) const;
+	PackagePointer package(const Dependency *dependency, const Platform &host, const Platform &target) const;
 
 	/**
 	 * \returns Other packages with the same id (but other versions/platforms)

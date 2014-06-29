@@ -39,7 +39,7 @@ void InstallCommandBase::constructPackageList(const QStringList cliPackages)
 	{
 		QString notFoundPackage;
 		QStringList alreadyInstalledPackagesOut;
-		if (!Util::stringListToPackageList(packages, cliPackages, m_pkgs, QString(),
+		if (!Util::stringListToPackageList(packages, cliPackages, m_pkgs, Platform(),
 										   &alreadyInstalledPackagesOut, &notFoundPackage)) {
 			throw Exception(
 				tr("The following package could not be found: %1").arg(notFoundPackage));

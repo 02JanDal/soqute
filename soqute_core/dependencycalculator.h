@@ -6,6 +6,7 @@
 
 class Package;
 class PackageList;
+class Platform;
 
 typedef const Package *PackagePointer;
 typedef QList<PackagePointer> PackagePointerList;
@@ -43,7 +44,7 @@ slots:
 	void setStartingPoint(const PackagePointerList packages);
 
 signals:
-	void noSuchPackage(const QString &id, const QString &version, const QString &host, const QString &target);
+	void noSuchPackage(const QString &id, const QString &version, const Platform &host, const Platform &target);
 	void done();
 
 private:

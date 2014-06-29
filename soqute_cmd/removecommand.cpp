@@ -86,8 +86,7 @@ bool RemoveCommand::executeImplementation()
 
 				if (entity->id() == id) {
 					if ((parser->value("no-platform-behavior") == "host" &&
-						 entity->target() == Util::currentPlatform()) ||
-						(entity->target() == target)) {
+						 entity->target().fuzzyCompare(Util::currentPlatform()))) {
 						// clean, all
 						if (parser->value("no-version-behavior") == "all" ||
 							(parser->value("no-version-behavior") == "clean" &&

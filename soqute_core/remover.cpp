@@ -95,5 +95,5 @@ void Remover::removeNextPackage()
 	const Package *package = m_packagesToRemove.takeFirst();
 	emit removePackage(package, Util::removalScriptsDirectory().absoluteFilePath(QString(
 									"%1-%2-%3-%4-remove.js").arg(package->id(), package->version(),
-															  package->host(), package->target())));
+															  package->host().toString(), package->target().toString())));
 }
