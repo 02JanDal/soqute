@@ -14,14 +14,12 @@ public:
 
 public
 slots:
-	virtual void install(const Package *package, const QString &fileName,
-						 QString *errorString = 0) override;
-	virtual void remove(const Package *package, const QString &fileName,
-						QString *errorString = 0) override;
+	virtual void install(const Package *package, const QString &fileName) override;
+	virtual void remove(const Package *package, const QString &fileName) override;
 
 private:
 	friend class JSObject;
-	void error(const QString &message);
+	void emitError(const QString &message);
 
 private:
 	QJSEngine *m_engine;

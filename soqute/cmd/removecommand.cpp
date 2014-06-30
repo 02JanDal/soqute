@@ -125,7 +125,7 @@ bool RemoveCommand::executeImplementation()
 	// confirmation
 	{
 		if (!parser->isSet("silent")) {
-			out << "You have choosen to remove the following packages:\n  " << endl;
+			out << "You have chosen to remove the following packages:\n  " << endl;
 			QStringList packages;
 			for (PackagePointer package : pkgs) {
 				packages.append(Util::createFriendlyName(package));

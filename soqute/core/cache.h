@@ -17,7 +17,7 @@ class QNetworkReply;
 class Cache
 {
 public:
-	Cache(const QDir &cacheDir);
+	explicit Cache(const QDir &cacheDir);
 
 	/// removes all cache entries using \see removeEntry that don't exist in \p in
 	void cleanCache(const QList<QUrl> &in);

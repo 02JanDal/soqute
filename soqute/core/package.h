@@ -65,7 +65,7 @@ class SOQUTE_CORESHARED_EXPORT Dependency : public QObject
 	Q_PROPERTY(QString version READ version CONSTANT)
 
 public:
-	Dependency(QObject *parent = 0);
+	explicit Dependency(QObject *parent = 0);
 
 	QString id() const
 	{
@@ -171,7 +171,7 @@ class SOQUTE_CORESHARED_EXPORT PackageList : public QObject
 	Q_PROPERTY(PackagePointerList entities READ entities NOTIFY entitiesChanged)
 
 public:
-	PackageList(QObject *parent = 0);
+	explicit PackageList(QObject *parent = 0);
 
 	void parse(const QByteArray &data);
 

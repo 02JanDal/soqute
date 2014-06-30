@@ -28,7 +28,7 @@ public:
 
 protected:
 	void baseChecks();
-	void constructPackageList(const QStringList cliPackages);
+	void constructPackageList(const QStringList &cliPackages);
 	void installPackages(AbstractAuthenticator *authenticator);
 
 	PackagePointerList m_pkgs;

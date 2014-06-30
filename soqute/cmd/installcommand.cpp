@@ -45,7 +45,7 @@ bool InstallCommand::executeImplementation()
 		// confirmation
 		{
 			if (!parser->isSet("silent")) {
-				out << "You have choosen to install the following packages:\n  ";
+				out << "You have chosen to install the following packages:\n  ";
 				QStringList packages;
 				for (PackagePointer package : m_pkgs) {
 					packages.append(Util::createFriendlyName(package));

@@ -11,14 +11,14 @@
 
 Remover::Remover(QObject *parent) : Actor(parent), m_remover(new JSInstaller(this))
 {
-	connect(m_remover, SIGNAL(error(QString)), this, SLOT(errorRemoving(QString)));
-	connect(m_remover, SIGNAL(removePackageBegin(const Package *)), this,
-			SLOT(removePackageBegin(const Package *)));
-	connect(m_remover, SIGNAL(removePackageEnd(const Package *)), this,
-			SLOT(removePackageEnd(const Package *)));
-	connect(m_remover, SIGNAL(finished()), this, SLOT(finish()));
-	connect(this, SIGNAL(removePackage(const Package *, QString)), m_remover,
-			SLOT(remove(const Package *, QString)), Qt::QueuedConnection);
+	connect(m_remover, &AbstractInstaller::error, this, &Remover::errorRemoving);
+	connect(m_remover, &AbstractInstaller::removePackageBegin, this,
+			&Remover::removePackageBegin);
+	connect(m_remover, &AbstractInstaller::removePackageEnd, this,
+			&Remover::removePackageEnd);
+	connect(m_remover, &AbstractInstaller::finished, this, &Remover::finish);
+	connect(this, &Remover::removePackage, m_remover,
+			&AbstractInstaller::remove, Qt::QueuedConnection);
 }
 
 QString Remover::messageToStringImpl(const int msg, const QVariant &data) const

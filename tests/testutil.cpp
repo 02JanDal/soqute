@@ -18,7 +18,7 @@ bool TestUtil::confirm()
 
 TestUtil::Output::Output(QIODevice *device) : QObject(), m_device(device)
 {
-	connect(m_device, SIGNAL(readyRead()), this, SLOT(dataRead()));
+	connect(m_device, &QIODevice::readyRead, this, &Output::dataRead);
 }
 void TestUtil::Output::dataRead()
 {

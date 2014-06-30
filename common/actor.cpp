@@ -1,7 +1,7 @@
 #include "actor.h"
 
 Actor::Actor(QObject *parent)
-	: QObject(parent)
+	: QObject(parent), m_isDone(false), m_isSuccess(true)
 {
 }
 

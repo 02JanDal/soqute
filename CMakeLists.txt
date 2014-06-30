@@ -62,4 +62,43 @@ endif()
 
 add_custom_target(ide_extra_files SOURCES status.txt)
 
+add_custom_target(static_analyzers)
+
+# krazy2
+find_program(KRAZY2_EXECUTABLE krazy2)
+if(KRAZY2_EXECUTABLE)
+    file(GLOB_RECURSE soqute_hdrs ${CMAKE_SOURCE_DIR}/soqute/*.h)
+    file(GLOB_RECURSE soqute_srcs ${CMAKE_SOURCE_DIR}/soqute/*.cpp)
+    file(GLOB_RECURSE wand_hdrs ${CMAKE_SOURCE_DIR}/wand/*.h)
+    file(GLOB_RECURSE wand_srcs ${CMAKE_SOURCE_DIR}/wand/*.cpp)
+    file(GLOB_RECURSE cmake_files ${CMAKE_SOURCE_DIR}/*CMakeLists.txt)
+    add_custom_target(krazy2
+        COMMAND ${KRAZY2_EXECUTABLE} --brief ${cmake_files}
+        COMMAND ${KRAZY2_EXECUTABLE} --brief --check-sets c++,qt5 ${soqute_hdrs} ${soqute_srcs} ${wand_hdrs} ${wand_srcs}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Running static code analyzer (krazy2)"
+    )
+    add_dependencies(static_analyzers krazy2)
+endif()
+
+# cppcheck
+find_program(CPPCHECK_EXECUTABLE cppcheck)
+if(CPPCHECK_EXECUTABLE)
+    set(cppcheck_flags "-I${CMAKE_CURRENT_BINARY_DIR}")
+    get_directory_property(inc_dirs INCLUDE_DIRECTORIES)
+    foreach(inc_dir ${inc_dirs})
+        set(cppcheck_flags ${cppcheck_flags} "-I{inc_dir}")
+    endforeach()
+    get_directory_property(defs COMPILE_DEFINITIONS)
+    foreach(def ${defs})
+        set(cppcheck_flags ${cppcheck_flags} "-D{def}")
+    endforeach()
+    add_custom_target(cppcheck
+        COMMAND ${CPPCHECK_EXECUTABLE} --enable=all --std=c++11 ${cppcheck_flags} -I${CMAKE_SOURCE_DIR}/common -I${CMAKE_SOURCE_DIR}/soqute/core ${CMAKE_SOURCE_DIR}/wand/core -i${CMAKE_SOURCE_DIR}/3rd-party -i${CMAKE_SOURCE_DIR}/build -i${CMAKE_SOURCE_DIR}/clangbuild ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Running static code analyzer (cppcheck)"
+    )
+    add_dependencies(static_analyzers cppcheck)
+endif()
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

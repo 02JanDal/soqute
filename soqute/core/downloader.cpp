@@ -24,23 +24,23 @@ Downloader::Downloader(PackageList *packages, PackagePointerList packagesToInsta
 	  m_authenticator(0)
 {
 	m_manager = new QNetworkAccessManager(this);
-	connect(m_manager, SIGNAL(finished(QNetworkReply *)), this,
-			SLOT(networkDone(QNetworkReply *)));
-	connect(m_manager, SIGNAL(authenticationRequired(QNetworkReply *, QAuthenticator *)), this,
-			SLOT(authenticationNeeded(QNetworkReply *, QAuthenticator *)));
-	connect(m_manager, SIGNAL(sslErrors(QNetworkReply *, QList<QSslError>)), this,
-			SLOT(sslErrors(QNetworkReply *, QList<QSslError>)));
+	connect(m_manager, &QNetworkAccessManager::finished, this,
+			&Downloader::networkDone);
+	connect(m_manager, &QNetworkAccessManager::authenticationRequired, this,
+			&Downloader::authenticationNeeded);
+	connect(m_manager, &QNetworkAccessManager::sslErrors, this,
+			&Downloader::sslErrors);
 
 	m_installer = new JSInstaller;
-	connect(m_installer, SIGNAL(installPackageBegin(const Package *)), this,
-			SLOT(installPackageBegin(const Package *)));
-	connect(m_installer, SIGNAL(installPackageEnd(const Package *)), this,
-			SLOT(installPackageEnd(const Package *)));
-	connect(m_installer, SIGNAL(error(QString)), this, SLOT(errorInstalling(QString)),
+	connect(m_installer, &AbstractInstaller::installPackageBegin, this,
+			&Downloader::installPackageBegin);
+	connect(m_installer, &AbstractInstaller::installPackageEnd, this,
+			&Downloader::installPackageEnd);
+	connect(m_installer, &AbstractInstaller::error, this, &Downloader::errorInstalling,
 			Qt::DirectConnection);
-	connect(m_installer, SIGNAL(finished()), this, SLOT(finish()));
-	connect(this, SIGNAL(installPackage(const Package *, QString)), m_installer,
-			SLOT(install(const Package *, QString)), Qt::QueuedConnection);
+	connect(m_installer, &AbstractInstaller::finished, this, &Downloader::finish);
+	connect(this, &Downloader::installPackage, m_installer,
+			&AbstractInstaller::install, Qt::QueuedConnection);
 	m_installer->start();
 
 	m_baseArchivePath =

@@ -14,10 +14,8 @@ public:
 
 public
 slots:
-	virtual void install(const Package *package, const QString &fileName,
-						 QString *errorString = 0) = 0;
-	virtual void remove(const Package *package, const QString &fileName,
-						QString *errorString = 0) = 0;
+	virtual void install(const Package *package, const QString &fileName) = 0;
+	virtual void remove(const Package *package, const QString &fileName) = 0;
 
 signals:
 	void installPackageBegin(const Package *package);

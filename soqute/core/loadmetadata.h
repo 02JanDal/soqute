@@ -18,7 +18,7 @@ class SOQUTE_CORESHARED_EXPORT LoadMetadata : public Actor
 {
 	Q_OBJECT
 public:
-	LoadMetadata(PackageList *packages, QObject *parent = 0);
+	explicit LoadMetadata(PackageList *packages, QObject *parent = 0);
 
 	void setRepositoryList(const QList<QUrl> &urls);
 

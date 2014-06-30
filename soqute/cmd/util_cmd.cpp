@@ -39,7 +39,7 @@ bool confirm()
 	char buf[size];
 	std::cin.getline(buf, size);
 	const QString answer = QString::fromLocal8Bit(buf, size);
-	if (!answer.toLower().startsWith("y")) {
+	if (!answer.toLower().startsWith('y')) {
 		return false;
 	}
 	return true;

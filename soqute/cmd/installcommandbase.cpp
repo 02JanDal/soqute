@@ -33,7 +33,7 @@ void InstallCommandBase::baseChecks()
 	}
 }
 
-void InstallCommandBase::constructPackageList(const QStringList cliPackages)
+void InstallCommandBase::constructPackageList(const QStringList &cliPackages)
 {
 	// handle arguments
 	{

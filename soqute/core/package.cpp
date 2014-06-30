@@ -198,7 +198,7 @@ bool PackageList::isVersionString(const QString &string) const
 	return exp.match(string).hasMatch();
 }
 
-QDebug &operator<<(QDebug &d, const Platform pkg)
+QDebug &operator<<(QDebug &d, const Platform &pkg)
 {
 	d.nospace() << "Platform(os=" << pkg.os << " arch=" << pkg.arch << " compiler=" << pkg.compiler << ")";
 	return d.space();
